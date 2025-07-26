@@ -5,27 +5,143 @@
     <style>
       body {
         margin: 0;
-        background: #8e2121;
+        background: grey;
         font-family: sans-serif;
         height: 100vh;
         overflow: hidden;
       }
 
+      .connections {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
       .node {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
         background: white;
         padding: 10px 16px;
         border-radius: 6px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         cursor: text;
       }
+
+      .root {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .add-child,
+      .add-sibling {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: none;
+        background: #3b82f6;
+        color: #fff;
+        cursor: pointer;
+        font-weight: bold;
+        line-height: 20px;
+        padding: 0;
+      }
+
+      .add-child {
+        bottom: -10px;
+        right: -10px;
+      }
+
+      .add-sibling {
+        top: -10px;
+        right: -10px;
+      }
     </style>
   </head>
 
   <body>
-    <div class="node" contenteditable="true">click to edit</div>
+    <svg id="connections"></svg>
+    <div class="node root" data-id="0">
+      <div class="content" contenteditable="true">click to edit</div>
+      <button class="add-child" title="Add Child">+</button>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        let counter = 0;
+        const svg = document.getElementById('connections');
+
+        function createLine(from, to) {
+          const rect1 = from.getBoundingClientRect();
+          const rect2 = to.getBoundingClientRect();
+          const x1 = rect1.left + rect1.width / 2;
+          const y1 = rect1.top + rect1.height / 2;
+          const x2 = rect2.left + rect2.width / 2;
+          const y2 = rect2.top + rect2.height / 2;
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
+          line.setAttribute('stroke', 'black');
+          svg.appendChild(line);
+        }
+
+        function attachEvents(node) {
+          const childBtn = node.querySelector('.add-child');
+          if (childBtn) {
+            childBtn.addEventListener('click', () => {
+              const newNode = createNode(node, false);
+              createLine(node, newNode);
+            });
+          }
+          const siblingBtn = node.querySelector('.add-sibling');
+          if (siblingBtn) {
+            siblingBtn.addEventListener('click', () => {
+              const parentId = node.dataset.parent;
+              const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+              if (!parentNode) return;
+              const newNode = createNode(parentNode, true);
+              createLine(parentNode, newNode);
+            });
+          }
+        }
+
+        function createNode(referenceNode, isSibling) {
+          counter += 1;
+          const node = document.createElement('div');
+          node.className = 'node';
+          node.dataset.id = counter;
+          node.dataset.parent = referenceNode.dataset.id;
+
+          node.innerHTML = `
+            <div class="content" contenteditable="true">new node</div>
+            <button class="add-child" title="Add Child">+</button>
+            <button class="add-sibling" title="Add Sibling">+</button>
+          `;
+
+          document.body.appendChild(node);
+
+          const refRect = referenceNode.getBoundingClientRect();
+          let left = refRect.left;
+          let top = refRect.bottom + 100;
+          if (isSibling) {
+            left = refRect.right + 100;
+            top = refRect.top;
+          }
+          node.style.left = left + 'px';
+          node.style.top = top + 'px';
+
+          attachEvents(node);
+          return node;
+        }
+
+        const root = document.querySelector('.root');
+        attachEvents(root);
+      });
+    </script>
   </body>
 </html>
