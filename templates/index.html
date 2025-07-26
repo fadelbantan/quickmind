@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>QuickMind</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-  <!-- SVG element to draw lines between nodes -->
-  <svg id="connections"></svg>
+  <!-- LeaderLine library for drawing connections -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
 
   <div class="node root" data-id="0">
     <div class="content" contenteditable="true">click to edit</div>
@@ -17,20 +18,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       let counter = 0;
-      const svg = document.getElementById('connections');
-      const connectionMap = {}; // Stores lines drawn for each parent node
-
-      // draws a line between two sets of coordinates
-      function drawLine(x1, y1, x2, y2) {
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x1);
-        line.setAttribute('y1', y1);
-        line.setAttribute('x2', x2);
-        line.setAttribute('y2', y2);
-        line.setAttribute('stroke', 'black');
-        svg.appendChild(line);
-        return line;
-      }
+      const connectionMap = {}; // Store leader lines for each parent node
 
       // updates connection lines between a parent and its children
       function updateConnections(parent) {
@@ -43,34 +31,14 @@
         const children = Array.from(document.querySelectorAll(`[data-parent="${parentId}"]`));
         const lines = [];
 
-        // single child
-        if (children.length === 1) {
-          const child = children[0];
-          const rect1 = parent.getBoundingClientRect();
-          const rect2 = child.getBoundingClientRect();
-          lines.push(drawLine(
-            rect1.left + rect1.width / 2,
-            rect1.top + rect1.height / 2,
-            rect2.left + rect2.width / 2,
-            rect2.top + rect2.height / 2
-          ));
-
-        // multiple children
-        } else if (children.length > 1) {
-          const parentRect = parent.getBoundingClientRect();
-          const branchY = children[0].getBoundingClientRect().top + children[0].getBoundingClientRect().height / 2;
-          const startX = parentRect.left + parentRect.width / 2;
-          const startY = parentRect.top + parentRect.height / 2;
-
-          // draw vertical line down from parent
-          lines.push(drawLine(startX, startY, startX, branchY));
-
-          // draw line to each child
-          children.forEach(child => {
-            const rect = child.getBoundingClientRect();
-            lines.push(drawLine(startX, branchY, rect.left + rect.width / 2, rect.top + rect.height / 2));
-          });
-        }
+        children.forEach(child => {
+          const line = new LeaderLine(
+            LeaderLine.pointAnchor(parent, { x: '50%', y: '50%' }),
+            LeaderLine.pointAnchor(child, { x: '50%', y: '50%' }),
+            { path: 'grid' }
+          );
+          lines.push(line);
+        });
         connectionMap[parentId] = lines;
       }
 
@@ -79,7 +47,8 @@
         const childBtn = node.querySelector('.add-child');
         if (childBtn) {
           childBtn.addEventListener('click', () => {
-            createNode(node, false);
+            createNode(node);
+            layoutChildren(node);
             updateConnections(node);
           });
         }
@@ -91,20 +60,21 @@
             const parentId = node.dataset.parent;
             const parentNode = document.querySelector(`[data-id="${parentId}"]`);
             if (!parentNode) return; // only appears after root
-            createNode(parentNode, true);
+            createNode(parentNode);
+            layoutChildren(parentNode);
             updateConnections(parentNode);
           });
         }
       }
 
-      // create a new node (child or sibling)
-      function createNode(referenceNode, isSibling) {
+      // create a new node under a parent
+      function createNode(parentNode) {
         counter += 1;
 
         const node = document.createElement('div');
         node.className = 'node';
         node.dataset.id = counter;
-        node.dataset.parent = referenceNode.dataset.id;
+        node.dataset.parent = parentNode.dataset.id;
 
         // inner content and buttons
         node.innerHTML = `
@@ -115,20 +85,31 @@
 
         document.body.appendChild(node);
 
-        // positionm of the node on screen
-        const refRect = referenceNode.getBoundingClientRect();
-        let left = refRect.left;
-        let top = refRect.bottom + 100;
-        if (isSibling) {
-          left = refRect.right + 100;
-          top = refRect.top;
-        }
-        node.style.left = left + 'px';
-        node.style.top = top + 'px';
+        // initial placement close to the parent; will be arranged later
+        const refRect = parentNode.getBoundingClientRect();
+        node.style.left = refRect.left + 'px';
+        node.style.top = refRect.bottom + 100 + 'px';
 
         attachEvents(node); // logic in the buttons
         return node;
       }
+
+      // arrange children of a parent so they do not overlap
+      function layoutChildren(parent) {
+        const children = Array.from(document.querySelectorAll(`[data-parent="${parent.dataset.id}"]`));
+        if (children.length === 0) return;
+        const parentRect = parent.getBoundingClientRect();
+        const spacing = 150;
+        const startX = parentRect.left - ((children.length - 1) / 2) * spacing;
+        const top = parentRect.bottom + 100;
+        children.forEach((child, idx) => {
+          child.style.left = startX + idx * spacing + 'px';
+          child.style.top = top + 'px';
+          // update lines for the moved child
+          updateConnections(child);
+        });
+      }
+
 
       // Kick things off
       const root = document.querySelector('.root');
@@ -136,4 +117,5 @@
     });
   </script>
 </body>
+
 </html>
