@@ -10,15 +10,18 @@
   <!-- LeaderLine library for drawing connections -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
 
-  <div class="node root" data-id="0">
-    <div class="content" contenteditable="true">click to edit</div>
-    <button class="add-child" title="Add Child">+</button>
+  <div id="canvas">
+    <div class="node root" data-id="0">
+      <div class="content" contenteditable="true">click to edit</div>
+      <button class="add-child" title="Add Child">+</button>
+    </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      let counter = 0;
-      const connectionMap = {}; // Store leader lines for each parent node
+      document.addEventListener('DOMContentLoaded', () => {
+        let counter = 0;
+        const connectionMap = {}; // Store leader lines for each parent node
+        const canvas = document.getElementById('canvas');
 
       // updates connection lines between a parent and its children
       function updateConnections(parent) {
@@ -33,13 +36,23 @@
 
         children.forEach(child => {
           const line = new LeaderLine(
-            LeaderLine.pointAnchor(parent, { x: '50%', y: '50%' }),
-            LeaderLine.pointAnchor(child, { x: '50%', y: '50%' }),
-            { path: 'grid' }
+            parent,
+            child,
+            {
+              startSocket: 'right',
+              endSocket: 'left',
+              path: 'fluid',
+              startPlug: 'behind',
+              endPlug: 'behind'
+            }
           );
           lines.push(line);
         });
         connectionMap[parentId] = lines;
+      }
+
+      function repositionAllLines() {
+        Object.values(connectionMap).flat().forEach(line => line.position());
       }
 
       function attachEvents(node) {
@@ -83,12 +96,13 @@
           <button class="add-sibling" title="Add Sibling">+</button>
         `;
 
-        document.body.appendChild(node);
+        canvas.appendChild(node);
 
         // initial placement close to the parent; will be arranged later
         const refRect = parentNode.getBoundingClientRect();
-        node.style.left = refRect.left + 'px';
-        node.style.top = refRect.bottom + 100 + 'px';
+        const canvasRect = canvas.getBoundingClientRect();
+        node.style.left = refRect.right - canvasRect.left + 100 + 'px';
+        node.style.top = refRect.top - canvasRect.top + 'px';
 
         attachEvents(node); // logic in the buttons
         return node;
@@ -99,16 +113,44 @@
         const children = Array.from(document.querySelectorAll(`[data-parent="${parent.dataset.id}"]`));
         if (children.length === 0) return;
         const parentRect = parent.getBoundingClientRect();
-        const spacing = 150;
-        const startX = parentRect.left - ((children.length - 1) / 2) * spacing;
-        const top = parentRect.bottom + 100;
+        const canvasRect = canvas.getBoundingClientRect();
+        const spacing = 120;
+        const left = parentRect.right - canvasRect.left + 100;
+        const startY = parentRect.top - canvasRect.top - ((children.length - 1) / 2) * spacing;
         children.forEach((child, idx) => {
-          child.style.left = startX + idx * spacing + 'px';
-          child.style.top = top + 'px';
+          child.style.left = left + 'px';
+          child.style.top = startY + idx * spacing + 'px';
           // update lines for the moved child
           updateConnections(child);
         });
       }
+
+      let isPanning = false;
+      let panX = 0;
+      let panY = 0;
+      let startX = 0;
+      let startY = 0;
+
+      canvas.addEventListener('mousedown', e => {
+        if (e.target.closest('.node')) return;
+        isPanning = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+        canvas.classList.add('dragging');
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (!isPanning) return;
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+        repositionAllLines();
+      });
+
+      document.addEventListener('mouseup', () => {
+        isPanning = false;
+        canvas.classList.remove('dragging');
+      });
 
 
       // Kick things off
