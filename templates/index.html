@@ -8,8 +8,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
 
   <div id="canvas">
-    <div class="node root" data-id="0">
-      <div class="content" contenteditable="true">click to edit</div>
+    <div class="node root" data-id="0" tabindex="0">
+      <div class="content" contenteditable="false">click to edit</div>
       <button class="add-child" title="Add Child">+</button>
     </div>
   </div>
@@ -26,6 +26,42 @@
         zoomOut: document.getElementById('zoom-out'),
         zoomDisplay: document.getElementById('zoom-display')
       };
+
+      let selectedNode = null;
+
+      function selectNode(node) {
+        if (selectedNode) selectedNode.classList.remove('selected');
+        selectedNode = node;
+        if (node) {
+          node.classList.add('selected');
+          node.focus();
+        }
+      }
+
+      function startEditing(node) {
+        const content = node.querySelector('.content');
+        if (!content) return;
+        selectNode(node);
+        content.contentEditable = 'true';
+        content.focus();
+        const range = document.createRange();
+        range.selectNodeContents(content);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        function finish() {
+          content.contentEditable = 'false';
+          content.removeEventListener('blur', finish);
+        }
+        content.addEventListener('blur', finish);
+        content.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            content.blur();
+          }
+        }, { once: true });
+      }
 
       function repositionAllLines() {
         Object.values(connectionMap).flat().forEach(line => line.position());
@@ -54,6 +90,23 @@
             updateConnections(parentNode);
           });
         }
+
+        node.addEventListener('click', e => {
+          if (e.target.closest('button')) return;
+          selectNode(node);
+        });
+
+        node.addEventListener('dblclick', e => {
+          if (e.target.closest('button')) return;
+          startEditing(node);
+        });
+
+        node.addEventListener('keydown', e => {
+          if (e.key === 'Enter' && document.activeElement !== node.querySelector('.content')) {
+            e.preventDefault();
+            startEditing(node);
+          }
+        });
       }
 
       function createNode(parentNode) {
@@ -65,10 +118,11 @@
         node.dataset.parent = parentNode.dataset.id;
 
         node.innerHTML = `
-          <div class="content" contenteditable="true">new node</div>
+          <div class="content" contenteditable="false">new node</div>
           <button class="add-child" title="Add Child">+</button>
           <button class="add-sibling" title="Add Sibling">+</button>
         `;
+        node.tabIndex = 0;
 
         canvas.appendChild(node);
 

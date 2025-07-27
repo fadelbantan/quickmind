@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    background: grey;
+    background: #4D4D4D;
     font-family: sans-serif;
     height: 100vh;
     overflow: hidden;
@@ -24,7 +24,15 @@ body {
     padding: 10px 16px;
     border-radius: 6px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.node .content {
     cursor: text;
+}
+
+.node.selected {
+    outline: 2px solid #3b82f6;
 }
 
 .root {
