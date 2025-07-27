@@ -28,6 +28,25 @@
       };
 
       let selectedNode = null;
+      let draggedNode = null;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let startLeft = 0;
+      let startTop = 0;
+
+      function stopDragging() {
+        if (draggedNode) {
+          const parentId = draggedNode.dataset.parent;
+          if (parentId) {
+            const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+            if (parentNode) updateConnections(parentNode);
+          }
+          updateConnections(draggedNode);
+          draggedNode = null;
+        }
+        isPanning = false;
+        canvas.classList.remove('dragging');
+      }
 
       function selectNode(node) {
         if (selectedNode) selectedNode.classList.remove('selected');
@@ -67,6 +86,29 @@
         Object.values(connectionMap).flat().forEach(line => line.position());
       }
 
+      function getChildren(node) {
+        return Array.from(document.querySelectorAll(`[data-parent="${node.dataset.id}"]`));
+      }
+
+      function updateNodeButtons(node) {
+        const isRoot = node.classList.contains('root');
+        const childBtn = node.querySelector('.add-child');
+        const siblingBtn = node.querySelector('.add-sibling');
+        const children = getChildren(node);
+
+        if (isRoot) {
+          if (siblingBtn) siblingBtn.style.display = 'none';
+          if (childBtn) childBtn.style.display = '';
+        } else if (children.length === 0) {
+          if (childBtn) childBtn.style.display = '';
+          if (siblingBtn) siblingBtn.style.display = '';
+        } else {
+          if (childBtn) childBtn.style.display = 'none';
+          if (siblingBtn) siblingBtn.style.display = '';
+        }
+      }
+
+
       function attachEvents(node) {
         // handle add children nodes
         const childBtn = node.querySelector('.add-child');
@@ -75,6 +117,7 @@
             createNode(node);
             layoutChildren(node);
             updateConnections(node);
+            updateNodeButtons(node);
           });
         }
 
@@ -88,6 +131,7 @@
             createNode(parentNode);
             layoutChildren(parentNode);
             updateConnections(parentNode);
+            updateNodeButtons(parentNode);
           });
         }
 
@@ -106,6 +150,16 @@
             e.preventDefault();
             startEditing(node);
           }
+        });
+
+        node.addEventListener('mousedown', e => {
+          if (!node.classList.contains('selected') || e.target.closest('button') || e.target.classList.contains('content')) return;
+          draggedNode = node;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          const style = window.getComputedStyle(node);
+          startLeft = parseFloat(style.left);
+          startTop = parseFloat(style.top);
         });
       }
 
@@ -132,6 +186,7 @@
         node.style.top = refRect.top - canvasRect.top + 'px';
 
         attachEvents(node);
+        updateNodeButtons(node);
         return node;
       }
 
@@ -212,27 +267,37 @@
       });
 
       document.addEventListener('mousemove', e => {
-        if (!isPanning) return;
-        panX = e.clientX - startX;
-        panY = e.clientY - startY;
-        applyTransform();
+        if (draggedNode) {
+          const dx = (e.clientX - dragStartX) / scale;
+          const dy = (e.clientY - dragStartY) / scale;
+          draggedNode.style.left = startLeft + dx + 'px';
+          draggedNode.style.top = startTop + dy + 'px';
+          repositionAllLines();
+        } else if (isPanning) {
+          panX = e.clientX - startX;
+          panY = e.clientY - startY;
+          applyTransform();
+        }
       });
 
       document.addEventListener('touchmove', e => {
-        if (!isPanning || e.touches.length !== 1) return;
-        panX = e.touches[0].clientX - startX;
-        panY = e.touches[0].clientY - startY;
-        applyTransform();
+        if (draggedNode && e.touches.length === 1) {
+          const dx = (e.touches[0].clientX - dragStartX) / scale;
+          const dy = (e.touches[0].clientY - dragStartY) / scale;
+          draggedNode.style.left = startLeft + dx + 'px';
+          draggedNode.style.top = startTop + dy + 'px';
+          repositionAllLines();
+        } else if (isPanning && e.touches.length === 1) {
+          panX = e.touches[0].clientX - startX;
+          panY = e.touches[0].clientY - startY;
+          applyTransform();
+        }
       });
 
-      document.addEventListener('mouseup', () => {
-        isPanning = false;
-        canvas.classList.remove('dragging');
-      });
-
-      document.addEventListener('touchend', () => {
-        isPanning = false;
-      });
+      document.addEventListener('mouseup', stopDragging);
+      document.addEventListener('touchend', stopDragging);
+      document.addEventListener('mouseleave', stopDragging);
+      document.addEventListener('touchcancel', stopDragging);
 
       canvas.addEventListener('wheel', e => {
         e.preventDefault();
@@ -266,6 +331,7 @@
       const root = document.querySelector('.root');
       attachEvents(root);
       applyTransform();
+      updateNodeButtons(root);
     });
   </script>
 </body>

@@ -33,6 +33,7 @@ body {
 
 .node.selected {
     outline: 2px solid #3b82f6;
+    cursor: move;
 }
 
 .root {
