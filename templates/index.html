@@ -163,6 +163,30 @@
         });
       }
 
+      function deleteSelectedNode() {
+        if (!selectedNode) return;
+        const content = selectedNode.querySelector('.content');
+        if (document.activeElement === content) return;
+        if (selectedNode.classList.contains('root')) return;
+        const children = getChildren(selectedNode);
+        if (children.length > 0) return;
+        const parentId = selectedNode.dataset.parent;
+        const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+        const nodeId = selectedNode.dataset.id;
+        if (connectionMap[nodeId]) {
+          connectionMap[nodeId].forEach(line => line.remove());
+          delete connectionMap[nodeId];
+        }
+        selectedNode.remove();
+        if (parentNode) {
+          updateConnections(parentNode);
+          updateNodeButtons(parentNode);
+          selectNode(parentNode);
+        } else {
+          selectNode(null);
+        }
+      }
+
       function createNode(parentNode) {
         counter += 1;
 
@@ -325,6 +349,12 @@
       controls.zoomOut.addEventListener('click', () => {
         scale = Math.max(scale - 0.1, 0.1);
         applyTransform();
+      });
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Backspace') {
+          deleteSelectedNode();
+        }
       });
 
       // Kick things off
