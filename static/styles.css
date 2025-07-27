@@ -11,6 +11,7 @@ body {
     height: 100%;
     position: relative;
     cursor: grab;
+    transform-origin: 0 0;
 }
 
 #canvas.dragging {
@@ -55,4 +56,17 @@ body {
 .add-sibling {
     top: -10px;
     right: -10px;
+    }
+
+#controls {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+}
+
+#controls button {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
 }
