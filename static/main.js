@@ -53,14 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
         function finish() {
             content.contentEditable = 'false';
             content.removeEventListener('blur', finish);
+            content.removeEventListener('keydown', keyHandler);
         }
-        content.addEventListener('blur', finish);
-        content.addEventListener('keydown', e => {
-            if (e.key === 'Enter') {
+        function keyHandler(e) {
+            if (e.key === 'Enter' || e.key === 'Escape') {
                 e.preventDefault();
                 content.blur();
             }
-        }, { once: true });
+        }
+        content.addEventListener('blur', finish);
+        content.addEventListener('keydown', keyHandler);
     }
 
     function repositionAllLines() {
@@ -127,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         node.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && document.activeElement !== node.querySelector('.content')) {
+            if ((e.key === 'e' || e.key === 'E') && document.activeElement !== node.querySelector('.content')) {
                 e.preventDefault();
                 startEditing(node);
             }
@@ -332,9 +334,83 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTransform();
     });
 
+    function centerMap() {
+        panX = 0;
+        panY = 0;
+        scale = 1;
+        applyTransform();
+        const rootNode = document.querySelector('.root');
+        if (rootNode) selectNode(rootNode);
+    }
+
     document.addEventListener('keydown', e => {
+        const active = document.activeElement;
+        if (active && active.classList.contains('content') && active.contentEditable === 'true') {
+            return;
+        }
         if (e.key === 'Backspace') {
             deleteSelectedNode();
+            return;
+        }
+        if (!selectedNode) return;
+
+        switch (e.key) {
+            case 'Enter':
+                e.preventDefault();
+                const child = createNode(selectedNode);
+                layoutChildren(selectedNode);
+                updateConnections(selectedNode);
+                updateNodeButtons(selectedNode);
+                selectNode(child);
+                break;
+            case 'Tab':
+                e.preventDefault();
+                const parentId = selectedNode.dataset.parent;
+                if (!parentId) break;
+                const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+                if (!parentNode) break;
+                const sibling = createNode(parentNode);
+                layoutChildren(parentNode);
+                updateConnections(parentNode);
+                updateNodeButtons(parentNode);
+                selectNode(sibling);
+                break;
+            case 'e':
+            case 'E':
+                e.preventDefault();
+                startEditing(selectedNode);
+                break;
+            case 'ArrowUp':
+            case 'ArrowDown': {
+                const pId = selectedNode.dataset.parent;
+                if (!pId) break;
+                const pNode = document.querySelector(`[data-id="${pId}"]`);
+                if (!pNode) break;
+                const siblings = getChildren(pNode);
+                const idx = siblings.indexOf(selectedNode);
+                if (idx === -1) break;
+                const nextIdx = e.key === 'ArrowUp' ? idx - 1 : idx + 1;
+                if (siblings[nextIdx]) selectNode(siblings[nextIdx]);
+                break;
+            }
+            case 'ArrowLeft': {
+                const parent = selectedNode.dataset.parent;
+                if (parent) {
+                    const node = document.querySelector(`[data-id="${parent}"]`);
+                    if (node) selectNode(node);
+                }
+                break;
+            }
+            case 'ArrowRight': {
+                const children = getChildren(selectedNode);
+                if (children.length > 0) selectNode(children[0]);
+                break;
+            }
+            case 'c':
+            case 'C':
+                e.preventDefault();
+                centerMap();
+                break;
         }
     });
 
