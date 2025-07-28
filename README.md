@@ -40,12 +40,18 @@ QuickMind is a solo mind mapping app built for speed, clarity, and flow. Create,
 ## 🚀 Getting Started
 
 ```bash
-git clone https://github.com/yourusername/quickmind.git
+git clone https://github.com/fadelbantan/quickmind.git
 cd quickmind
-pip install flask
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 python app.py
 ```
 Then open your browser at: http://127.0.0.1:5000
+```bash
+# For windows:
+venv\Scripts\activate
+```
 
 📁 File Structure
 ```
