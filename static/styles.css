@@ -96,19 +96,30 @@ body {
     top: 60px;
     left: 10px;
     z-index: 1000;
-    background: #fff;
+    background: #f9f9f9;
     border: 1px solid #ccc;
-    padding: 4px;
-    border-radius: 4px;
-    width: 150px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 200px;
+    font-size: 13px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
 }
 
 #shortcut-help summary {
     cursor: pointer;
     font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 4px;
 }
 
 #shortcut-help ul {
-    margin: 4px 0 0 0;
-    padding-left: 20px;
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+#shortcut-help li {
+    margin: 6px 0;
+    line-height: 1.4;
 }

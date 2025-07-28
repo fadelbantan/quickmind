@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             content.contentEditable = 'false';
             content.removeEventListener('blur', finish);
             content.removeEventListener('keydown', keyHandler);
+            content.removeEventListener('input', repositionAllLines);
+            repositionAllLines();
         }
         function keyHandler(e) {
             if (e.key === 'Enter' || e.key === 'Escape') {
@@ -63,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         content.addEventListener('blur', finish);
         content.addEventListener('keydown', keyHandler);
+        content.addEventListener('input', repositionAllLines);
     }
 
     function repositionAllLines() {
