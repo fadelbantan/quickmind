@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         zoomOut: document.getElementById('zoom-out'),
         zoomDisplay: document.getElementById('zoom-display')
     };
+    const shortcutHelp = document.getElementById('shortcut-help');
 
     let selectedNode = null;
     let draggedNode = null;
@@ -338,17 +339,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function centerMap() {
-        panX = 0;
-        panY = 0;
-        scale = 1;
+        const prevTransform = canvas.style.transform;
+        canvas.style.transform = 'none';
+        const nodes = Array.from(document.querySelectorAll('.node'));
+        const canvasRect = canvas.getBoundingClientRect();
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        nodes.forEach(n => {
+            const rect = n.getBoundingClientRect();
+            minX = Math.min(minX, rect.left - canvasRect.left);
+            minY = Math.min(minY, rect.top - canvasRect.top);
+            maxX = Math.max(maxX, rect.right - canvasRect.left);
+            maxY = Math.max(maxY, rect.bottom - canvasRect.top);
+        });
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        panX = canvasRect.width / 2 - centerX * scale;
+        panY = canvasRect.height / 2 - centerY * scale;
+
+        canvas.style.transform = prevTransform;
         applyTransform();
-        const rootNode = document.querySelector('.root');
-        if (rootNode) selectNode(rootNode);
     }
 
     document.addEventListener('keydown', e => {
         const active = document.activeElement;
         if (active && active.classList.contains('content') && active.contentEditable === 'true') {
+            return;
+        }
+                if (e.key === '?') {
+            e.preventDefault();
+            if (shortcutHelp) {
+                shortcutHelp.open = !shortcutHelp.open;
+            }
             return;
         }
         if (e.key === 'Backspace') {

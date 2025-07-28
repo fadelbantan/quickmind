@@ -11,10 +11,10 @@ def home():
         <button id='zoom-in' title='Zoom In'>+</button>
     </div>
     <details id='shortcut-help'>
-        <summary>🔑 Shortcuts</summary>
+        <summary>🔑 Shortcut<span class="hint">(Press ?)</span></summary>
         <ul>
             <li>↩️ <strong>Enter</strong> – Add child</li>
-            <li>↔️ <strong>Tab</strong> – Add sibling</li>            
+            <li>↔️ <strong>Tab</strong> – Add sibling</li>
             <li>✏️ <strong>E</strong> / Double-click – Edit node</li>
             <li>🚪 <strong>Esc</strong> – Exit edit mode</li>
             <li>🧭 <strong>Arrow keys</strong> – Navigate nodes</li>
