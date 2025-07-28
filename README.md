@@ -46,12 +46,12 @@ quickmind/
 │
 ├── app.py                 # Flask app
 ├── templates/
-│   └── index.html
-│   └── base.html          # Main UI layout
+│   └── index.html         # Main UI layout and map container
+│   └── base.html          # Shared layout with Inter font, scripts, and styles
 ├── static/
-│   ├── styles.css         # Styles
-│   ├── mindmap.js         # Core logic
-│   └── util.js            # DOM helpers
+│   ├── styles.css         # Clean UI styles (Inter, color palette, spacing)
+│   ├── mindmap.js         # Core mind map logic, node events, keyboard controls
+│   └── util.js            # Lightweight DOM utility functions ($ and $$)
 ```
 
 ---
