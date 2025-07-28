@@ -1,9 +1,10 @@
 body {
     margin: 0;
-    background: #4D4D4D;
-    font-family: sans-serif;
+    background: #F4F5F7;
+    font-family: 'Inter', sans-serif;
     height: 100vh;
     overflow: hidden;
+    color: #1F2937;
 }
 
 #canvas {
@@ -20,19 +21,30 @@ body {
 
 .node {
     position: absolute;
-    background: white;
-    padding: 10px 16px;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+    padding: 12px 18px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
     cursor: pointer;
+    min-width: 120px;
+    max-width: 260px;
+    transition: box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.node:hover {
+    box-shadow: 0 10px 16px rgba(0, 0, 0, 0.1);
 }
 
 .node .content {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #1F2937;
     cursor: text;
 }
 
 .node.selected {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     cursor: move;
 }
 
@@ -45,83 +57,112 @@ body {
 .add-child,
 .add-sibling {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: none;
-    background: #3b82f6;
+    background: #3B82F6;
     color: #fff;
     cursor: pointer;
     font-weight: bold;
-    line-height: 20px;
+    font-size: 16px;
+    line-height: 24px;
     padding: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: background 0.2s ease;
+}
+
+.add-child:hover,
+.add-sibling:hover {
+    background: #2563EB;
 }
 
 .add-child {
-    bottom: -10px;
-    right: -10px;
+    bottom: -12px;
+    right: -12px;
 }
 
 .add-sibling {
-    top: -10px;
-    right: -10px;
+    top: -12px;
+    right: -12px;
 }
 
 #controls {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 16px;
+    left: 16px;
     z-index: 1000;
-    background: #fff;
-    border: 1px solid #ccc;
-    padding: 4px;
-    border-radius: 4px;
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    padding: 6px 12px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    width: 200px;
-    justify-content: space-between;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 #controls button {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #1F2937;
+    transition: background 0.2s ease;
+    border-radius: 6px;
+}
+
+#controls button:hover {
+    background: #F3F4F6;
 }
 
 #controls span {
-    margin: 0 5px;
-    min-width: 40px;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 50px;
     text-align: center;
 }
 
 #shortcut-help {
     position: fixed;
-    top: 60px;
-    left: 10px;
+    top: 72px;
+    left: 16px;
     z-index: 1000;
-    background: #f9f9f9;
-    border: 1px solid #ccc;
-    padding: 8px 12px;
-    border-radius: 8px;
-    width: 200px;
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    padding: 14px 18px;
+    border-radius: 10px;
+    width: 240px;
     font-size: 13px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
     transition: all 0.2s ease;
+    color: #111827;
 }
 
 #shortcut-help summary {
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 14px;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+    color: #111827;
+}
+
+#shortcut-help .hint {
+    font-weight: normal;
+    font-size: 12px;
+    margin-left: 6px;
+    color: #6B7280;
 }
 
 #shortcut-help ul {
     list-style: none;
     padding: 0;
-    margin: 8px 0 0 0;
+    margin: 6px 0 0 0;
 }
 
 #shortcut-help li {
     margin: 6px 0;
-    line-height: 1.4;
+    line-height: 1.5;
 }

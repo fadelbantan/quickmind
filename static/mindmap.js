@@ -1,13 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     let counter = 0;
-    const connectionMap = {}; // Store leader lines for each parent node
-    const canvas = document.getElementById('canvas');
-    const controls = {
-        zoomIn: document.getElementById('zoom-in'),
-        zoomOut: document.getElementById('zoom-out'),
-        zoomDisplay: document.getElementById('zoom-display')
-    };
-    const shortcutHelp = document.getElementById('shortcut-help');
+    const connectionMap = {};
+    const canvas = $('#canvas');
+    const controls = { zoomIn: $('#zoom-in'), zoomOut: $('#zoom-out'), zoomDisplay: $('#zoom-display') };
+    const shortcutHelp = $('#shortcut-help');
 
     let selectedNode = null;
     let draggedNode = null;
@@ -20,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (draggedNode) {
             const parentId = draggedNode.dataset.parent;
             if (parentId) {
-                const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+                const parentNode = $(`[data-id="${parentId}"]`);
                 if (parentNode) updateConnections(parentNode);
             }
             updateConnections(draggedNode);
@@ -40,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startEditing(node) {
-        const content = node.querySelector('.content');
+        const content = $('.content', node);
         if (!content) return;
         selectNode(node);
         content.contentEditable = 'true';
@@ -73,14 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.values(connectionMap).flat().forEach(line => line.position());
     }
 
-    function getChildren(node) {
-        return Array.from(document.querySelectorAll(`[data-parent="${node.dataset.id}"]`));
-    }
+    const getChildren = node => $$(`[data-parent="${node.dataset.id}"]`);
 
     function updateNodeButtons(node) {
         const isRoot = node.classList.contains('root');
-        const childBtn = node.querySelector('.add-child');
-        const siblingBtn = node.querySelector('.add-sibling');
+        const childBtn = $('.add-child', node);
+        const siblingBtn = $('.add-sibling', node);
         const children = getChildren(node);
 
         if (isRoot) {
@@ -98,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function attachEvents(node) {
         // handle add children nodes
-        const childBtn = node.querySelector('.add-child');
+        const childBtn = $('.add-child', node);
         if (childBtn) {
             childBtn.addEventListener('click', () => {
                 createNode(node);
@@ -109,11 +103,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // handle adding sibling nodes
-        const siblingBtn = node.querySelector('.add-sibling');
+        const siblingBtn = $('.add-sibling', node);
         if (siblingBtn) {
             siblingBtn.addEventListener('click', () => {
                 const parentId = node.dataset.parent;
-                const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+                const parentNode = $(`[data-id="${parentId}"]`);
                 if (!parentNode) return;
                 createNode(parentNode);
                 layoutChildren(parentNode);
@@ -133,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         node.addEventListener('keydown', e => {
-            if ((e.key === 'e' || e.key === 'E') && document.activeElement !== node.querySelector('.content')) {
+            if ((e.key === 'e' || e.key === 'E') && document.activeElement !== $('.content', node)) {
                 e.preventDefault();
                 startEditing(node);
             }
@@ -158,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const children = getChildren(selectedNode);
         if (children.length > 0) return;
         const parentId = selectedNode.dataset.parent;
-        const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+        const parentNode = $(`[data-id="${parentId}"]`);
         const nodeId = selectedNode.dataset.id;
         if (connectionMap[nodeId]) {
             connectionMap[nodeId].forEach(line => line.remove());
@@ -202,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function layoutChildren(parent) {
-        const children = Array.from(document.querySelectorAll(`[data-parent="${parent.dataset.id}"]`));
+        const children = Array.from($$(`[data-parent="${parent.dataset.id}"]`));
         if (children.length === 0) return;
         const parentRect = parent.getBoundingClientRect();
         const canvasRect = canvas.getBoundingClientRect();
@@ -236,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (connectionMap[parentId]) {
             connectionMap[parentId].forEach(line => line.remove());
         }
-        const children = Array.from(document.querySelectorAll(`[data-parent="${parentId}"]`));
+        const children =  $$(`[data-parent="${parentId}"]`);
         const lines = [];
 
         children.forEach(child => {
@@ -341,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function centerMap() {
         const prevTransform = canvas.style.transform;
         canvas.style.transform = 'none';
-        const nodes = Array.from(document.querySelectorAll('.node'));
+        const nodes = $$('.node');
         const canvasRect = canvas.getBoundingClientRect();
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
@@ -368,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (active && active.classList.contains('content') && active.contentEditable === 'true') {
             return;
         }
-                if (e.key === '?') {
+        if (e.key === '?') {
             e.preventDefault();
             if (shortcutHelp) {
                 shortcutHelp.open = !shortcutHelp.open;
@@ -394,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const parentId = selectedNode.dataset.parent;
                 if (!parentId) break;
-                const parentNode = document.querySelector(`[data-id="${parentId}"]`);
+                const parentNode = $(`[data-id="${parentId}"]`);
                 if (!parentNode) break;
                 const sibling = createNode(parentNode);
                 layoutChildren(parentNode);
@@ -423,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'ArrowLeft': {
                 const parent = selectedNode.dataset.parent;
                 if (parent) {
-                    const node = document.querySelector(`[data-id="${parent}"]`);
+                    const node = $(`[data-id="${parent}"]`);
                     if (node) selectNode(node);
                 }
                 break;
@@ -442,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Kick things off
-    const root = document.querySelector('.root');
+    const root = $('.root');
     attachEvents(root);
     applyTransform();
     updateNodeButtons(root);
