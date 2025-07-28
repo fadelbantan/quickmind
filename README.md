@@ -19,6 +19,13 @@ QuickMind is a solo mind mapping app built for speed, clarity, and flow. Create,
 
 ## 📸 Screenshots
 
+<p align="center">
+  <img src=".github/assets/mindmap1.png" alt="QuickMind Screenshot 1" width="100%" />
+  <br><br>
+  <img src=".github/assets/mindmap2.png" alt="QuickMind Screenshot 2" width="100%" />
+</p>
+
+
 ---
 
 ## 🧪 Built With

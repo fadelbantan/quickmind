@@ -25,6 +25,7 @@ body {
     padding: 12px 18px;
     border-radius: 10px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E5E7EB;
     cursor: pointer;
     min-width: 120px;
     max-width: 260px;
@@ -56,6 +57,7 @@ body {
 
 .add-child,
 .add-sibling {
+    display: none;
     position: absolute;
     width: 24px;
     height: 24px;
@@ -95,10 +97,12 @@ body {
     background: #ffffff;
     border: 1px solid #E5E7EB;
     padding: 6px 12px;
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
+    width: 240px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -127,16 +131,16 @@ body {
 
 #shortcut-help {
     position: fixed;
-    top: 72px;
+    top: 128px;
     left: 16px;
     z-index: 1000;
     background: #ffffff;
     border: 1px solid #E5E7EB;
-    padding: 14px 18px;
+    padding: 6px 12px;
     border-radius: 10px;
     width: 240px;
     font-size: 13px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: all 0.2s ease;
     color: #111827;
 }
@@ -165,4 +169,34 @@ body {
 #shortcut-help li {
     margin: 6px 0;
     line-height: 1.5;
+}
+
+#save-bar {
+    position: fixed;
+    top: 72px;
+    left: 16px;
+    z-index: 1000;
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    padding: 6px 12px;
+    border-radius: 10px;
+    width: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+#save-bar button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+#save-bar button:hover {
+    background: #F3F4F6;
 }

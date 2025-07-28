@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = $('#canvas');
     const controls = { zoomIn: $('#zoom-in'), zoomOut: $('#zoom-out'), zoomDisplay: $('#zoom-display') };
     const shortcutHelp = $('#shortcut-help');
+    const saveBtn = $('#save-btn');
 
     let selectedNode = null;
     let draggedNode = null;
@@ -222,8 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         node.innerHTML = `
           <div class="content" contenteditable="false">new node</div>
-          <button class="add-child" title="Add Child">+</button>
-          <button class="add-sibling" title="Add Sibling">+</button>
         `;
         node.tabIndex = 0;
 
@@ -442,6 +441,18 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTransform();
     }
 
+    function saveAsImage() {
+        html2canvas(canvas).then(c => {
+            const link = document.createElement('a');
+            link.download = 'mindmap.png';
+            link.href = c.toDataURL('image/png');
+            link.click();
+        });
+    }
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveAsImage);
+    }
+
     document.addEventListener('keydown', e => {
         const active = document.activeElement;
         if (active && active.classList.contains('content') && active.contentEditable === 'true') {
@@ -470,6 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyTransform();
                 return;
             }
+        }
+        if (e.key === 's' || e.key === 'S') {
+            e.preventDefault();
+            saveAsImage();
+            return;
         }
         if (e.key === '?') {
             e.preventDefault();

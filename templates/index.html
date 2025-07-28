@@ -4,7 +4,6 @@
 <div id="canvas">
   <div class="node root" data-id="0" tabindex="0">
     <div class="content" contenteditable="false">click to edit</div>
-    <button class="add-child" title="Add Child">+</button>
   </div>
 </div>
 
@@ -12,6 +11,9 @@
   <button id="zoom-out" title="Zoom Out">-</button>
   <span id="zoom-display">100%</span>
   <button id="zoom-in" title="Zoom In">+</button>
+</div>
+<div id="save-bar">
+  <button id="save-btn" title="Save PNG">💾 Save PNG</button>
 </div>
 <details id="shortcut-help">
   <summary>🔑 Shortcut<span class="hint">(Press ?)</span></summary>
@@ -27,6 +29,7 @@
     <li>🔍 <strong>Ctrl/Cmd + -/+</strong> – Zoom</li>
     <li>↩️ <strong>Ctrl/Cmd + Z</strong> – Undo</li>
     <li>↪️ <strong>Ctrl/Cmd + Shift + Z</strong> – Redo</li>
+    <li>💾 <strong>Ctrl/Cmd + S</strong> – Save as image</li>
   </ul>
 </details>
 {% endblock %}
