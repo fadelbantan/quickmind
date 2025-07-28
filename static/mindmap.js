@@ -12,6 +12,47 @@ document.addEventListener('DOMContentLoaded', () => {
     let startLeft = 0;
     let startTop = 0;
 
+    const history = [];
+    let historyIndex = -1;
+
+    function clearConnections() {
+        Object.values(connectionMap).flat().forEach(l => l.remove());
+        for (const k in connectionMap) delete connectionMap[k];
+    }
+
+    function recordHistory() {
+        history.splice(historyIndex + 1);
+        history.push(canvas.innerHTML);
+        historyIndex = history.length - 1;
+    }
+
+    function restoreState(html) {
+        clearConnections();
+        canvas.innerHTML = html;
+        selectedNode = null;
+        counter = 0;
+        const nodes = $$('.node');
+        nodes.forEach(n => {
+            attachEvents(n);
+            updateNodeButtons(n);
+            const id = parseInt(n.dataset.id, 10);
+            if (id > counter) counter = id;
+        });
+        nodes.forEach(n => updateConnections(n));
+    }
+
+    function undo() {
+        if (historyIndex <= 0) return;
+        historyIndex -= 1;
+        restoreState(history[historyIndex]);
+    }
+
+    function redo() {
+        if (historyIndex >= history.length - 1) return;
+        historyIndex += 1;
+        restoreState(history[historyIndex]);
+    }
+
     function stopDragging() {
         if (draggedNode) {
             const parentId = draggedNode.dataset.parent;
@@ -21,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             updateConnections(draggedNode);
             draggedNode = null;
+            recordHistory();
         }
         isPanning = false;
         canvas.classList.remove('dragging');
@@ -53,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             content.removeEventListener('keydown', keyHandler);
             content.removeEventListener('input', repositionAllLines);
             repositionAllLines();
+            recordHistory();
         }
         function keyHandler(e) {
             if (e.key === 'Enter' || e.key === 'Escape') {
@@ -166,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             selectNode(null);
         }
+        recordHistory();
     }
 
     function createNode(parentNode) {
@@ -192,8 +236,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         attachEvents(node);
         updateNodeButtons(node);
+        recordHistory();
         return node;
     }
+
+    const subtreeSizes = {};
+
+    function computeSubtreeSize(node) {
+        const children = getChildren(node);
+        if (children.length === 0) {
+            subtreeSizes[node.dataset.id] = 1;
+            return 1;
+        }
+        let total = 0;
+        children.forEach(child => {
+            total += computeSubtreeSize(child);
+        });
+        subtreeSizes[node.dataset.id] = total;
+        return total;
+    }
+
 
     function layoutChildren(parent) {
         const children = Array.from($$(`[data-parent="${parent.dataset.id}"]`));
@@ -202,12 +264,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvasRect = canvas.getBoundingClientRect();
         const spacing = 120;
         const left = parentRect.right - canvasRect.left + 100;
-        const startY = parentRect.top - canvasRect.top - ((children.length - 1) / 2) * spacing;
+        const heights = children.map(c => subtreeSizes[c.dataset.id] || 1);
+        const totalHeight = heights.reduce((a, b) => a + b, 0);
+        let startY = parentRect.top - canvasRect.top - (totalHeight * spacing) / 2;
         children.forEach((child, idx) => {
+            const h = heights[idx];
+            startY += (h * spacing) / 2;
             child.style.left = left + 'px';
-            child.style.top = startY + idx * spacing + 'px';
+            child.style.top = startY + 'px';
             updateConnections(child);
+            startY += (h * spacing) / 2;
         });
+        updateConnections(parent);
+    }
+
+    function layoutSubtree(node) {
+        layoutChildren(node);
+        getChildren(node).forEach(child => layoutSubtree(child));
+    }
+
+    function tidyLayout() {
+        const prev = canvas.style.transform;
+        canvas.style.transform = 'none';
+        const rootNode = $('.root');
+        Object.keys(subtreeSizes).forEach(k => delete subtreeSizes[k]);
+        computeSubtreeSize(rootNode);
+        layoutSubtree(rootNode);
+        canvas.style.transform = prev;
+        repositionAllLines();
+        recordHistory();
     }
 
     let scale = 1;
@@ -230,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (connectionMap[parentId]) {
             connectionMap[parentId].forEach(line => line.remove());
         }
-        const children =  $$(`[data-parent="${parentId}"]`);
+        const children = $$(`[data-parent="${parentId}"]`);
         const lines = [];
 
         children.forEach(child => {
@@ -362,6 +447,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (active && active.classList.contains('content') && active.contentEditable === 'true') {
             return;
         }
+
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === 'z' || e.key === 'Z') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    redo();
+                } else {
+                    undo();
+                }
+                return;
+            }
+            if (e.key === '+' || e.key === '=') {
+                e.preventDefault();
+                scale = Math.min(scale + 0.1, 3);
+                applyTransform();
+                return;
+            }
+            if (e.key === '-') {
+                e.preventDefault();
+                scale = Math.max(scale - 0.1, 0.1);
+                applyTransform();
+                return;
+            }
+        }
         if (e.key === '?') {
             e.preventDefault();
             if (shortcutHelp) {
@@ -427,6 +536,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (children.length > 0) selectNode(children[0]);
                 break;
             }
+            case 'l':
+            case 'L':
+                e.preventDefault();
+                tidyLayout();
+                break;
             case 'c':
             case 'C':
                 e.preventDefault();
@@ -440,4 +554,5 @@ document.addEventListener('DOMContentLoaded', () => {
     attachEvents(root);
     applyTransform();
     updateNodeButtons(root);
+    recordHistory();
 });
