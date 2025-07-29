@@ -1,8 +1,8 @@
 # 🧠 QuickMind — Think Visually, Move Fast
 
-QuickMind is a solo mind mapping app built for speed, clarity, and flow. Create, connect, and organize ideas with powerful keyboard shortcuts and a smooth drag-and-drop interface, perfect for developers, thinkers, and creative chaos-tamers.
+> 🏆 4th Place • [Boot.dev Hackathon 2025](https://blog.boot.dev/news/hackathon-2025/)
 
-> Made in 72 hours during the [Boot.dev Hackathon 2025](https://blog.boot.dev/news/hackathon-2025/) 
+QuickMind is a solo mind mapping app built for speed, clarity, and flow. Create, connect, and organize ideas with powerful keyboard shortcuts and a smooth drag-and-drop interface, perfect for developers, thinkers, and creative chaos-tamers.
 
 ---
 
