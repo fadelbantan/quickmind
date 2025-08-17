@@ -1,4 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const saved = localStorage.getItem("quickmind_autosave");
+  if (saved) {
+    const data = JSON.parse(saved);
+    if (confirm("Restore previous session?")) {
+      restoreState(data.html);
+      scale = data.transform.scale;
+      panX = data.transform.panX;
+      panY = data.transform.panY;
+      applyTransform();
+    }
+  }
   let counter = 0;
   const connectionMap = {};
   const canvas = $("#canvas");
@@ -40,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     history.splice(historyIndex + 1);
     history.push(canvas.innerHTML);
     historyIndex = history.length - 1;
+    autoSave();
   }
 
   function restoreState(html) {
@@ -67,6 +79,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (historyIndex >= history.length - 1) return;
     historyIndex += 1;
     restoreState(history[historyIndex]);
+  }
+
+  // Add to mindmap.js
+  function autoSave() {
+    const mapData = {
+      html: canvas.innerHTML,
+      transform: { scale, panX, panY },
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("quickmind_autosave", JSON.stringify(mapData));
   }
 
   function stopDragging() {
@@ -246,7 +268,10 @@ document.addEventListener("DOMContentLoaded", () => {
     node.dataset.parent = parentNode.dataset.id;
 
     node.innerHTML = `
-          <div class="content" contenteditable="false">new node</div>
+      <div class="color-picker">
+          ${nodeColors.map((c, i) => `<span data-color="${c}" style="background:${c}"></span>`).join("")}
+      </div>
+      <div class="content" contenteditable="false">new node</div>
         `;
     node.tabIndex = 0;
 
