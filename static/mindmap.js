@@ -12,6 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   let counter = 0;
   const connectionMap = {};
+  const LINE_STYLE = {
+    color: "#94a3b8", // slate-400
+    size: 3,
+    path: "magnet",
+    startPlug: "behind",
+    endPlug: "arrow2",
+  };
   const canvas = $("#canvas");
   const controls = {
     zoomIn: $("#zoom-in"),
@@ -40,6 +47,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const history = [];
   let historyIndex = -1;
 
+  function autoExpandWidth(node) {
+    const content = $(".content", node);
+    if (!content) return;
+    node.style.width = "auto";
+    const padding = 36; // left and right padding
+    const width = Math.max(content.scrollWidth + padding, 120);
+    node.style.width = width + "px";
+  }
+
   function clearConnections() {
     Object.values(connectionMap)
       .flat()
@@ -63,6 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nodes.forEach((n) => {
       attachEvents(n);
       updateNodeButtons(n);
+      autoExpandWidth(n);
       const id = parseInt(n.dataset.id, 10);
       if (id > counter) counter = id;
     });
@@ -131,7 +148,19 @@ document.addEventListener("DOMContentLoaded", () => {
       content.contentEditable = "false";
       content.removeEventListener("blur", finish);
       content.removeEventListener("keydown", keyHandler);
-      content.removeEventListener("input", repositionAllLines);
+      content.removeEventListener("input", onInput);
+      autoExpandWidth(node);
+      layoutChildren(node);
+      const parentId = node.dataset.parent;
+      if (parentId) {
+        const parentNode = $(`[data-id="${parentId}"]`);
+        if (parentNode) {
+          layoutChildren(parentNode);
+          updateConnections(parentNode);
+        }
+      }
+      updateConnections(node);
+
       repositionAllLines();
       recordHistory();
     }
@@ -143,13 +172,54 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     content.addEventListener("blur", finish);
     content.addEventListener("keydown", keyHandler);
-    content.addEventListener("input", repositionAllLines);
+    function onInput() {
+      autoExpandWidth(node);
+      layoutChildren(node);
+      const parentId = node.dataset.parent;
+      if (parentId) {
+        const parentNode = $(`[data-id="${parentId}"]`);
+        if (parentNode) {
+          layoutChildren(parentNode);
+          updateConnections(parentNode);
+        }
+      }
+      updateConnections(node);
+      repositionAllLines();
+    }
+    content.addEventListener("input", onInput);
   }
 
   function repositionAllLines() {
     Object.values(connectionMap)
       .flat()
       .forEach((line) => line.position());
+  }
+
+  // Choose sockets based on relative position between elements
+  function chooseSockets(parentEl, childEl) {
+    const pr = parentEl.getBoundingClientRect();
+    const cr = childEl.getBoundingClientRect();
+    const pcx = (pr.left + pr.right) / 2;
+    const pcy = (pr.top + pr.bottom) / 2;
+    const ccx = (cr.left + cr.right) / 2;
+    const ccy = (cr.top + cr.bottom) / 2;
+
+    const dx = ccx - pcx;
+    const dy = ccy - pcy;
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      // Horizontal relation
+      return {
+        startSocket: dx >= 0 ? "right" : "left",
+        endSocket: dx >= 0 ? "left" : "right",
+      };
+    } else {
+      // Vertical relation
+      return {
+        startSocket: dy >= 0 ? "bottom" : "top",
+        endSocket: dy >= 0 ? "top" : "bottom",
+      };
+    }
   }
 
   const getChildren = (node) => $$(`[data-parent="${node.dataset.id}"]`);
@@ -177,6 +247,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const childBtn = $(".add-child", node);
     if (childBtn) {
       childBtn.addEventListener("click", () => {
+        const c = $(".content", node);
+        if (!c || c.textContent.trim() === "") return;
         createNode(node);
         layoutChildren(node);
         updateConnections(node);
@@ -188,6 +260,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const siblingBtn = $(".add-sibling", node);
     if (siblingBtn) {
       siblingBtn.addEventListener("click", () => {
+        const c = $(".content", node);
+        if (!c || c.textContent.trim() === "") return;
         const parentId = node.dataset.parent;
         const parentNode = $(`[data-id="${parentId}"]`);
         if (!parentNode) return;
@@ -276,6 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
     node.tabIndex = 0;
 
     canvas.appendChild(node);
+    autoExpandWidth(node);
 
     const refRect = parentNode.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
@@ -366,17 +441,48 @@ document.addEventListener("DOMContentLoaded", () => {
     const lines = [];
 
     children.forEach((child) => {
+      const sockets = chooseSockets(parent, child);
       const line = new LeaderLine(parent, child, {
-        startSocket: "right",
-        endSocket: "left",
-        path: "fluid",
-        startPlug: "behind",
-        endPlug: "behind",
+        ...LINE_STYLE,
+        startSocket: sockets.startSocket,
+        endSocket: sockets.endSocket,
       });
       lines.push(line);
     });
     connectionMap[parentId] = lines;
   }
+
+  // Throttle helper to avoid re-creating lines too often during drag
+  function throttle(fn, limit) {
+    let last = 0;
+    let timer;
+    return function (...args) {
+      const now = Date.now();
+      const remaining = limit - (now - last);
+      if (remaining <= 0) {
+        last = now;
+        fn.apply(this, args);
+      } else {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          last = Date.now();
+          fn.apply(this, args);
+        }, remaining);
+      }
+    };
+  }
+
+  const updateConnectionsDuringDrag = throttle((node) => {
+    if (!node) return;
+    // Update this node's children lines
+    updateConnections(node);
+    // Update this node's parent's lines as well
+    const pid = node.dataset.parent;
+    if (pid) {
+      const p = document.querySelector(`[data-id="${pid}"]`);
+      if (p) updateConnections(p);
+    }
+  }, 60);
 
   let isPanning = false;
   let panX = 0;
@@ -552,16 +658,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!selectedNode) return;
 
     switch (e.key) {
-      case "Enter":
+      case "Enter": {
         e.preventDefault();
+        const content = $(".content", selectedNode);
+        if (!content || content.textContent.trim() === "") break;
         const child = createNode(selectedNode);
         layoutChildren(selectedNode);
         updateConnections(selectedNode);
         updateNodeButtons(selectedNode);
         selectNode(child);
         break;
-      case "Tab":
+      }
+      case "Tab": {
         e.preventDefault();
+        const content = $(".content", selectedNode);
+        if (!content || content.textContent.trim() === "") break;
         const parentId = selectedNode.dataset.parent;
         if (!parentId) break;
         const parentNode = $(`[data-id="${parentId}"]`);
@@ -572,6 +683,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateNodeButtons(parentNode);
         selectNode(sibling);
         break;
+      }
       case "e":
       case "E":
         e.preventDefault();
@@ -621,5 +733,6 @@ document.addEventListener("DOMContentLoaded", () => {
   attachEvents(root);
   applyTransform();
   updateNodeButtons(root);
+  autoExpandWidth(root);
   recordHistory();
 });
