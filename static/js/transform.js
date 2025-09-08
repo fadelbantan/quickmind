@@ -1,21 +1,21 @@
-import { throttle } from "/static/util.js";
+/**
+ * Handle canvas pan and zoom transforms.
+ */
 import { store } from "/static/js/state.js";
 import { repositionAllLines } from "/static/js/connections.js";
-
-export function updateZoomDisplay() { store.controls.zoomDisplay.textContent = Math.round(store.scale * 100) + "%"; }
-
-
-export function applyTransform() {
-    store.canvas.style.transform = `translate(${store.panX}px, ${store.panY}px) scale(${store.scale})`;
-    repositionAllLines(); updateZoomDisplay();
+/**
+ * Update the zoom level text in the UI.
+ */
+export function updateZoomDisplay() {
+    store.controls.zoomDisplay.textContent = Math.round(store.scale * 100) + "%";
 }
 
-
-export const updateConnectionsDuringDrag = throttle((node) => {
-    if (!node) return;
-    // update node and its parent connections without heavy reflow
-    import('./connections.js').then(({ updateConnections }) => {
-        updateConnections(node);
-        const pid = node.dataset.parent; if (pid) { const p = document.querySelector(`[data-id="${pid}"]`); if (p) updateConnections(p); }
-    });
-}, 60);
+/**
+ * Apply the current pan and zoom transform to the canvas.
+ * Repositions existing connection lines and updates the zoom display.
+ */
+export function applyTransform() {
+    store.canvas.style.transform = `translate(${store.panX}px, ${store.panY}px) scale(${store.scale})`;
+    repositionAllLines();
+    updateZoomDisplay();
+}

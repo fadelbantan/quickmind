@@ -1,18 +1,30 @@
+/**
+ * Manage drawing and positioning of lines between nodes.
+ */
 import { $$ } from "/static/util.js";
 import { store } from "/static/js/state.js";
 
-
+/**
+ * Remove all connection lines from the canvas and reset the map.
+ */
 export function clearConnections() {
     Object.values(store.connectionMap).flat().forEach((l) => l.remove());
     for (const k in store.connectionMap) delete store.connectionMap[k];
 }
 
-
+/**
+ * Reposition every connection line. Useful after global layout changes.
+ */
 export function repositionAllLines() {
     Object.values(store.connectionMap).flat().forEach((line) => line.position());
 }
 
-
+/**
+ * Determine the optimal sockets to connect a parent and child node.
+ * @param {HTMLElement} parentEl - Parent node element.
+ * @param {HTMLElement} childEl - Child node element.
+ * @returns {{startSocket: string, endSocket: string}} The sockets to use.
+ */
 export function chooseSockets(parentEl, childEl) {
     const pr = parentEl.getBoundingClientRect();
     const cr = childEl.getBoundingClientRect();
@@ -26,7 +38,10 @@ export function chooseSockets(parentEl, childEl) {
     }
 }
 
-
+/**
+ * Create or update lines connecting a parent node to all of its children.
+ * @param {HTMLElement} parent - Parent node whose connections should be drawn.
+ */
 export function updateConnections(parent) {
     const parentId = parent.dataset.id;
     if (store.connectionMap[parentId]) store.connectionMap[parentId].forEach((l) => l.remove());

@@ -1,8 +1,16 @@
+/**
+ * Algorithms for positioning and centering nodes on the canvas.
+ */
 import { $$, getChildren } from "/static/util.js";
 import { store, recordHistory } from "/static/js/state.js";
 import { updateConnections, repositionAllLines } from "/static/js/connections.js";
 import { applyTransform } from "/static/js/transform.js";
 
+/**
+ * Recursively compute the size of a node's subtree.
+ * @param {HTMLElement} node - The node to evaluate.
+ * @returns {number} Total number of descendant nodes including the node itself.
+ */
 export function computeSubtreeSize(node) {
     const children = getChildren(node);
     if (children.length === 0) { store.subtreeSizes[node.dataset.id] = 1; return 1; }
@@ -10,7 +18,10 @@ export function computeSubtreeSize(node) {
     store.subtreeSizes[node.dataset.id] = total; return total;
 }
 
-
+/**
+ * Position all direct children of a parent node based on subtree sizes.
+ * @param {HTMLElement} parent - Node whose children should be laid out.
+ */
 export function layoutChildren(parent) {
     const children = Array.from($$(`[data-parent="${parent.dataset.id}"]`));
     if (!children.length) return;
@@ -32,13 +43,18 @@ export function layoutChildren(parent) {
     updateConnections(parent);
 }
 
-
+/**
+ * Recursively lay out an entire subtree rooted at the given node.
+ * @param {HTMLElement} node - Root of the subtree to arrange.
+ */
 export function layoutSubtree(node) {
     layoutChildren(node);
     getChildren(node).forEach((c) => layoutSubtree(c));
 }
 
-
+/**
+ * Automatically position all nodes and record the change in history.
+ */
 export function tidyLayout() {
     const prev = store.canvas.style.transform;
     store.canvas.style.transform = "none";
@@ -51,7 +67,9 @@ export function tidyLayout() {
     recordHistory();
 }
 
-
+/**
+ * Center the entire mind map within the viewport.
+ */
 export function centerMap() {
     const prevTransform = store.canvas.style.transform;
     store.canvas.style.transform = "none";

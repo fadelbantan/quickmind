@@ -1,5 +1,8 @@
 import { $$ } from "/static/util.js";
 
+/**
+ * Global application state container.
+ */
 export const store = {
   // DOM refs (set in main.js)
   canvas: null,
@@ -38,18 +41,29 @@ export function recordHistory() {
   autoSave();
 }
 
+/**
+ * Revert the canvas to the previous state.
+ * @param {(html: string) => void} restoreState - Callback to apply saved HTML.
+ */
 export function undo(restoreState) {
   if (store.historyIndex <= 0) return;
   store.historyIndex -= 1;
   restoreState(store.history[store.historyIndex]);
 }
 
+/**
+ * Reapply a state that was previously undone.
+ * @param {(html: string) => void} restoreState - Callback to apply saved HTML.
+ */
 export function redo(restoreState) {
   if (store.historyIndex >= store.history.length - 1) return;
   store.historyIndex += 1;
   restoreState(store.history[store.historyIndex]);
 }
 
+/**
+ * Persist the current canvas and transform to local storage.
+ */
 export function autoSave() {
   const { canvas, scale, panX, panY } = store;
   const mapData = {
@@ -60,6 +74,11 @@ export function autoSave() {
   localStorage.setItem("quickmind_autosave", JSON.stringify(mapData));
 }
 
+/**
+ * Restore a canvas from saved HTML and reattach all necessary events.
+ * @param {string} html - Saved canvas HTML.
+ * @param {object} helpers - Functions used to rebuild state.
+ */
 export function restoreStateHTML(html, helpers) {
   const { clearConnections, attachEvents, updateNodeButtons, autoExpandWidth, updateConnections } = helpers;
   clearConnections();
@@ -78,6 +97,10 @@ export function restoreStateHTML(html, helpers) {
   nodes.forEach((n) => updateConnections(n));
 }
 
+/**
+ * Ask the user if they want to restore a previously saved session.
+ * @param {(html: string) => void} restoreState - Callback to apply saved HTML.
+ */
 export function maybeRestoreOnLoad(restoreState) {
   const saved = localStorage.getItem("quickmind_autosave");
   if (!saved) return;

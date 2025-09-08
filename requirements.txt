@@ -1,3 +1,4 @@
+# Flask web framework dependencies
 blinker==1.9.0
 click==8.1.8
 Flask==3.1.1

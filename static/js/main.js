@@ -1,5 +1,7 @@
-// /static/js/main.js
-import { $, $$ } from "/static/util.js";
+/**
+ * Entry point for QuickMind client-side logic.
+ */
+import { $ } from "/static/util.js";
 import {
   store, recordHistory, undo, redo,
   restoreStateHTML, maybeRestoreOnLoad
@@ -12,10 +14,10 @@ import {
 } from "/static/js/nodes.js";
 import { applyTransform } from "/static/js/transform.js";
 
-console.log("[main] loaded");
-
+/**
+ * Bootstrap the mind map once the DOM is ready.
+ */
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("[main] DOMContentLoaded");
 
   // wire DOM
   store.canvas = $("#canvas");
@@ -45,6 +47,9 @@ window.addEventListener("DOMContentLoaded", () => {
   applyTransform();
 
   // --- canvas panning + node drag end
+  /**
+   * Finish any node drag or canvas pan operation and record history.
+   */
   function stopDragging() {
     if (store.draggedNode) {
       const parentId = store.draggedNode.dataset.parent;

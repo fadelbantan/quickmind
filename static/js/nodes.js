@@ -1,20 +1,28 @@
-// /static/js/nodes.js
-import { $, $$, getChildren } from "/static/util.js";
+/**
+ * Node manipulation and event handling utilities.
+ */
+import { $, getChildren } from "/static/util.js";
 import { store, recordHistory } from "/static/js/state.js";
 import { layoutChildren } from "/static/js/layout.js";
 import { updateConnections, repositionAllLines } from "/static/js/connections.js";
 
-console.log("[nodes] loaded");
-
+/**
+ * Auto-expand a node's width to fit its content.
+ * @param {HTMLElement} node - Node to resize.
+ */
 export function autoExpandWidth(node) {
   const content = $(".content", node);
-  if (!content) return;                  // <-- return is inside function (OK)
+  if (!content) return;
   node.style.width = "auto";
   const padding = 36;
   const width = Math.max(content.scrollWidth + padding, 120);
   node.style.width = width + "px";
 }
 
+/**
+ * Show or hide node action buttons based on state.
+ * @param {HTMLElement} node - Node whose buttons to update.
+ */
 export function updateNodeButtons(node) {
   const isRoot = node.classList.contains("root");
   const childBtn = $(".add-child", node);
@@ -33,6 +41,10 @@ export function updateNodeButtons(node) {
   }
 }
 
+/**
+ * Set the given node as the current selection.
+ * @param {HTMLElement|null} node - Node to select.
+ */
 export function selectNode(node) {
   if (store.selectedNode) store.selectedNode.classList.remove("selected");
   store.selectedNode = node;
@@ -42,6 +54,10 @@ export function selectNode(node) {
   }
 }
 
+/**
+ * Enable inline editing for a node's content.
+ * @param {HTMLElement} node - Node to edit.
+ */
 export function startEditing(node) {
   const content = $(".content", node);
   if (!content) return;
@@ -78,7 +94,7 @@ export function startEditing(node) {
   function keyHandler(e) {
     if (e.key === "Enter" || e.key === "Escape") {
       e.preventDefault();
-      content.blur(); // triggers finish()
+      content.blur();
     }
   }
 
@@ -102,8 +118,11 @@ export function startEditing(node) {
   content.addEventListener("input", onInput);
 }
 
+/**
+ * Attach UI event handlers to a node element.
+ * @param {HTMLElement} node - Node to bind events to.
+ */
 export function attachEvents(node) {
-  // add child
   const childBtn = $(".add-child", node);
   if (childBtn) {
     childBtn.addEventListener("click", () => {
@@ -117,7 +136,6 @@ export function attachEvents(node) {
     });
   }
 
-  // add sibling
   const siblingBtn = $(".add-sibling", node);
   if (siblingBtn) {
     siblingBtn.addEventListener("click", () => {
@@ -134,19 +152,16 @@ export function attachEvents(node) {
     });
   }
 
-  // select on click (but not when clicking buttons)
   node.addEventListener("click", (e) => {
     if (e.target.closest("button")) return;
     selectNode(node);
   });
 
-  // double-click to edit
   node.addEventListener("dblclick", (e) => {
     if (e.target.closest("button")) return;
     startEditing(node);
   });
 
-  // 'e' to edit when not focused on content
   node.addEventListener("keydown", (e) => {
     if (
       (e.key === "e" || e.key === "E") &&
@@ -157,13 +172,13 @@ export function attachEvents(node) {
     }
   });
 
-  // start dragging the selected node
   node.addEventListener("mousedown", (e) => {
     if (
       !node.classList.contains("selected") ||
       e.target.closest("button") ||
       e.target.classList.contains("content")
-    ) return;
+    )
+      return;
 
     store.draggedNode = node;
     store.dragStartX = e.clientX;
@@ -174,6 +189,11 @@ export function attachEvents(node) {
   });
 }
 
+/**
+ * Create a new node as a child of the given parent.
+ * @param {HTMLElement} parentNode - Parent node for the new node.
+ * @returns {HTMLElement} The newly created node element.
+ */
 export function createNode(parentNode) {
   store.counter += 1;
 
@@ -202,6 +222,9 @@ export function createNode(parentNode) {
   return node;
 }
 
+/**
+ * Delete the currently selected node if it's a leaf.
+ */
 export function deleteSelectedNode() {
   const node = store.selectedNode;
   if (!node) return;
@@ -232,3 +255,4 @@ export function deleteSelectedNode() {
   }
   recordHistory();
 }
+
