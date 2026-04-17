@@ -1,5 +1,4 @@
-// /static/js/nodes.js
-import { $, $$, getChildren } from "/static/util.js";
+import { $, getChildren } from "/static/util.js";
 import { store, recordHistory } from "/static/js/state.js";
 import { layoutChildren } from "/static/js/layout.js";
 import { updateConnections, repositionAllLines } from "/static/js/connections.js";
@@ -8,7 +7,7 @@ console.log("[nodes] loaded");
 
 export function autoExpandWidth(node) {
   const content = $(".content", node);
-  if (!content) return;                  // <-- return is inside function (OK)
+  if (!content) return;
   node.style.width = "auto";
   const padding = 36;
   const width = Math.max(content.scrollWidth + padding, 120);
@@ -73,11 +72,14 @@ export function startEditing(node) {
     updateConnections(node);
     repositionAllLines();
     recordHistory();
+    // Return focus to the node so keyboard shortcuts work immediately after editing
+    node.focus();
   }
 
   function keyHandler(e) {
     if (e.key === "Enter" || e.key === "Escape") {
       e.preventDefault();
+      e.stopPropagation(); // prevent Enter/Escape from bubbling to global shortcut handler
       content.blur(); // triggers finish()
     }
   }
@@ -103,6 +105,19 @@ export function startEditing(node) {
 }
 
 export function attachEvents(node) {
+  // color picker: click to cycle through preset node background colors
+  const colorPicker = $(".color-picker", node);
+  if (colorPicker) {
+    colorPicker.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const colors = store.nodeColors;
+      const current = node.style.backgroundColor || colors[0];
+      const idx = colors.indexOf(current);
+      node.style.backgroundColor = colors[(idx + 1) % colors.length];
+      recordHistory();
+    });
+  }
+
   // add child
   const childBtn = $(".add-child", node);
   if (childBtn) {
@@ -185,6 +200,8 @@ export function createNode(parentNode) {
   node.innerHTML = `
     <div class="color-picker"></div>
     <div class="content" contenteditable="false">new node</div>
+    <button class="add-child" title="Add child node">+</button>
+    <button class="add-sibling" title="Add sibling node">+</button>
   `;
   node.tabIndex = 0;
 
@@ -193,8 +210,8 @@ export function createNode(parentNode) {
 
   const refRect = parentNode.getBoundingClientRect();
   const canvasRect = store.canvas.getBoundingClientRect();
-  node.style.left = refRect.right - canvasRect.left + 100 + "px";
-  node.style.top = refRect.top - canvasRect.top + "px";
+  node.style.left = (refRect.right - canvasRect.left) / store.scale + 100 + "px";
+  node.style.top = (refRect.top - canvasRect.top) / store.scale + "px";
 
   attachEvents(node);
   updateNodeButtons(node);

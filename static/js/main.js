@@ -1,5 +1,5 @@
-// /static/js/main.js
-import { $, $$ } from "/static/util.js";
+// App bootstrap, global event wiring, and keyboard shortcuts.
+import { $ } from "/static/util.js";
 import {
   store, recordHistory, undo, redo,
   restoreStateHTML, maybeRestoreOnLoad
@@ -14,10 +14,11 @@ import { applyTransform } from "/static/js/transform.js";
 
 console.log("[main] loaded");
 
+// Initialize once the DOM is ready.
 window.addEventListener("DOMContentLoaded", () => {
   console.log("[main] DOMContentLoaded");
 
-  // wire DOM
+  // Cache key DOM references used across the app.
   store.canvas = $("#canvas");
   store.controls = {
     zoomIn: $("#zoom-in"),
@@ -27,24 +28,30 @@ window.addEventListener("DOMContentLoaded", () => {
   store.shortcutHelp = $("#shortcut-help");
   store.saveBtn = $("#save-btn");
 
-  // restore (if any)
+  // Restore prior session if present.
+  // Track whether a restore happened so we don't double-attach events on the root.
+  let sessionRestored = false;
   maybeRestoreOnLoad((html) => {
     restoreStateHTML(html, {
       clearConnections, attachEvents, updateNodeButtons, autoExpandWidth, updateConnections
     });
     applyTransform();
+    sessionRestored = true;
   });
 
-  // init root
+  // Initialize the root node and baseline history state.
+  // Skip attachEvents/updateNodeButtons/autoExpandWidth if restoreStateHTML already ran them.
   const root = $(".node.root");
-  attachEvents(root);
-  updateNodeButtons(root);
-  autoExpandWidth(root);
+  if (!sessionRestored) {
+    attachEvents(root);
+    updateNodeButtons(root);
+    autoExpandWidth(root);
+  }
   recordHistory();
   selectNode(root);
   applyTransform();
 
-  // --- canvas panning + node drag end
+  // End drag/pan interactions and snap connections.
   function stopDragging() {
     if (store.draggedNode) {
       const parentId = store.draggedNode.dataset.parent;
@@ -61,6 +68,7 @@ window.addEventListener("DOMContentLoaded", () => {
     applyTransform();
   }
 
+  // Begin canvas panning when clicking empty space.
   store.canvas.addEventListener("mousedown", (e) => {
     if (e.target.closest(".node")) return;
     store.isPanning = true;
@@ -68,12 +76,14 @@ window.addEventListener("DOMContentLoaded", () => {
     store.startY = e.clientY - store.panY;
     store.canvas.classList.add("dragging");
   });
+  // Touch panning mirrors mouse behavior.
   store.canvas.addEventListener("touchstart", (e) => {
     if (e.touches.length !== 1 || e.target.closest(".node")) return;
     store.isPanning = true;
     store.startX = e.touches[0].clientX - store.panX;
     store.startY = e.touches[0].clientY - store.panY;
   });
+  // Drag node or pan the canvas while moving the pointer.
   document.addEventListener("mousemove", (e) => {
     if (store.draggedNode) {
       const dx = (e.clientX - store.dragStartX) / store.scale;
@@ -86,6 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
       applyTransform();
     }
   });
+  // Touch move for dragging/panning with one finger.
   document.addEventListener("touchmove", (e) => {
     if (store.draggedNode && e.touches.length === 1) {
       const dx = (e.touches[0].clientX - store.dragStartX) / store.scale;
@@ -98,12 +109,13 @@ window.addEventListener("DOMContentLoaded", () => {
       applyTransform();
     }
   });
+  // Stop drag/pan when pointer leaves or interaction ends.
   document.addEventListener("mouseup", stopDragging);
   document.addEventListener("mouseleave", stopDragging);
   document.addEventListener("touchend", stopDragging);
   document.addEventListener("touchcancel", stopDragging);
 
-  // wheel pan/zoom
+  // Wheel pans; Ctrl/Meta wheel zooms.
   store.canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
     if (e.ctrlKey) {
@@ -116,7 +128,7 @@ window.addEventListener("DOMContentLoaded", () => {
     applyTransform();
   }, { passive: false });
 
-  // zoom buttons
+  // Zoom buttons for explicit UI control.
   store.controls.zoomIn?.addEventListener("click", () => {
     store.scale = Math.min(store.scale + 0.1, 3);
     applyTransform();
@@ -126,8 +138,9 @@ window.addEventListener("DOMContentLoaded", () => {
     applyTransform();
   });
 
-  // save image
+  // Export the canvas as a PNG via html2canvas.
   store.saveBtn?.addEventListener("click", () => {
+    if (typeof html2canvas === 'undefined') { console.warn('html2canvas not loaded'); return; }
     html2canvas(store.canvas).then((c) => {
       const link = document.createElement("a");
       link.download = "mindmap.png";
@@ -136,14 +149,14 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- keyboard shortcuts
+  // Global keyboard shortcuts for editing and navigation.
   document.addEventListener("keydown", (e) => {
     const active = document.activeElement;
     if (active && active.classList.contains("content") && active.contentEditable === "true") {
       return; // don't steal keys while editing text
     }
 
-    // global combos
+    // Global combos (undo/redo, zoom, save).
     if (e.ctrlKey || e.metaKey) {
       if (e.key === "z" || e.key === "Z") {
         e.preventDefault();
@@ -164,12 +177,14 @@ window.addEventListener("DOMContentLoaded", () => {
       if (e.key === "s" || e.key === "S") { e.preventDefault(); store.saveBtn?.click(); return; }
     }
 
+    // Toggle shortcut help.
     if (e.key === "?") {
       e.preventDefault();
       const sh = document.querySelector("#shortcut-help");
       if (sh) sh.open = !sh.open;
       return;
     }
+    // Backspace deletes the selected node (if allowed).
     if (e.key === "Backspace") { deleteSelectedNode(); return; }
 
     if (!store.selectedNode) return;
@@ -179,6 +194,7 @@ window.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         const content = $(".content", store.selectedNode);
         if (!content || content.textContent.trim() === "") break;
+        // Enter adds a child node.
         const child = createNode(store.selectedNode);
         layoutChildren(store.selectedNode);
         updateConnections(store.selectedNode);
@@ -194,6 +210,7 @@ window.addEventListener("DOMContentLoaded", () => {
         if (!parentId) break;
         const parentNode = document.querySelector(`[data-id="${parentId}"]`);
         if (!parentNode) break;
+        // Tab adds a sibling node.
         const sibling = createNode(parentNode);
         layoutChildren(parentNode);
         updateConnections(parentNode);
@@ -204,11 +221,13 @@ window.addEventListener("DOMContentLoaded", () => {
       case "e":
       case "E": {
         e.preventDefault();
+        // "e" starts editing the selected node.
         startEditing(store.selectedNode);
         break;
       }
       case "ArrowUp":
       case "ArrowDown": {
+        // Arrow up/down selects previous/next sibling.
         const pId = store.selectedNode.dataset.parent;
         if (!pId) break;
         const pNode = document.querySelector(`[data-id="${pId}"]`);
@@ -221,6 +240,7 @@ window.addEventListener("DOMContentLoaded", () => {
         break;
       }
       case "ArrowLeft": {
+        // Arrow left selects the parent node.
         const parent = store.selectedNode.dataset.parent;
         if (parent) {
           const node = document.querySelector(`[data-id="${parent}"]`);
@@ -229,6 +249,7 @@ window.addEventListener("DOMContentLoaded", () => {
         break;
       }
       case "ArrowRight": {
+        // Arrow right selects the first child node.
         const children = Array.from(document.querySelectorAll(`[data-parent="${store.selectedNode.dataset.id}"]`));
         if (children.length > 0) selectNode(children[0]);
         break;

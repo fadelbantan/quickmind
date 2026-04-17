@@ -57,7 +57,11 @@ export function autoSave() {
     transform: { scale, panX, panY },
     timestamp: Date.now(),
   };
-  localStorage.setItem("quickmind_autosave", JSON.stringify(mapData));
+  try {
+    localStorage.setItem("quickmind_autosave", JSON.stringify(mapData));
+  } catch (e) {
+    console.warn("Autosave failed:", e);
+  }
 }
 
 export function restoreStateHTML(html, helpers) {

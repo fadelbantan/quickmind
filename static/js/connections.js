@@ -1,18 +1,19 @@
+// LeaderLine connection management between parent and child nodes.
 import { $$ } from "/static/util.js";
 import { store } from "/static/js/state.js";
 
-
+// Remove all line elements and reset the connection map.
 export function clearConnections() {
     Object.values(store.connectionMap).flat().forEach((l) => l.remove());
     for (const k in store.connectionMap) delete store.connectionMap[k];
 }
 
-
+// Reposition all existing lines after a layout change.
 export function repositionAllLines() {
     Object.values(store.connectionMap).flat().forEach((line) => line.position());
 }
 
-
+// Choose connection sockets based on relative orientation of parent/child.
 export function chooseSockets(parentEl, childEl) {
     const pr = parentEl.getBoundingClientRect();
     const cr = childEl.getBoundingClientRect();
@@ -26,7 +27,7 @@ export function chooseSockets(parentEl, childEl) {
     }
 }
 
-
+// Rebuild all child connection lines for a given parent.
 export function updateConnections(parent) {
     const parentId = parent.dataset.id;
     if (store.connectionMap[parentId]) store.connectionMap[parentId].forEach((l) => l.remove());
@@ -34,6 +35,7 @@ export function updateConnections(parent) {
     const lines = [];
     children.forEach((child) => {
         const sockets = chooseSockets(parent, child);
+        if (typeof LeaderLine === 'undefined') return;
         const line = new LeaderLine(parent, child, {
             ...{ color: "#94a3b8", size: 3, path: "magnet", startPlug: "behind", endPlug: "arrow2" },
             startSocket: sockets.startSocket,
