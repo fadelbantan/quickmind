@@ -4,8 +4,8 @@ import {
   store, recordHistory, undo, redo,
   restoreStateHTML, maybeRestoreOnLoad
 } from "/static/js/state.js";
-import { clearConnections, updateConnections } from "/static/js/connections.js";
-import { layoutChildren, tidyLayout, centerMap } from "/static/js/layout.js";
+import { clearConnections, updateConnections, repositionAllLines } from "/static/js/connections.js";
+import { smartLayout, tidyLayout, centerMap } from "/static/js/layout.js";
 import {
   attachEvents, autoExpandWidth, updateNodeButtons,
   selectNode, startEditing, createNode, deleteSelectedNode
@@ -90,6 +90,7 @@ window.addEventListener("DOMContentLoaded", () => {
       const dy = (e.clientY - store.dragStartY) / store.scale;
       store.draggedNode.style.left = store.startLeft + dx + "px";
       store.draggedNode.style.top = store.startTop + dy + "px";
+      repositionAllLines();
     } else if (store.isPanning) {
       store.panX = e.clientX - store.startX;
       store.panY = e.clientY - store.startY;
@@ -196,10 +197,10 @@ window.addEventListener("DOMContentLoaded", () => {
         if (!content || content.textContent.trim() === "") break;
         // Enter adds a child node.
         const child = createNode(store.selectedNode);
-        layoutChildren(store.selectedNode);
+        smartLayout(store.selectedNode);
         updateConnections(store.selectedNode);
         updateNodeButtons(store.selectedNode);
-        selectNode(child);
+        startEditing(child);
         break;
       }
       case "Tab": {
@@ -212,10 +213,10 @@ window.addEventListener("DOMContentLoaded", () => {
         if (!parentNode) break;
         // Tab adds a sibling node.
         const sibling = createNode(parentNode);
-        layoutChildren(parentNode);
+        smartLayout(parentNode);
         updateConnections(parentNode);
         updateNodeButtons(parentNode);
-        selectNode(sibling);
+        startEditing(sibling);
         break;
       }
       case "e":

@@ -13,18 +13,20 @@ export function repositionAllLines() {
     Object.values(store.connectionMap).flat().forEach((line) => line.position());
 }
 
-// Choose connection sockets based on relative orientation of parent/child.
+// Choose connection sockets for a horizontal (left-to-right) tree.
+// Lines always exit the parent's horizontal edge toward the child's side, so
+// tall stacks of children fan out from the parent's right edge instead of
+// sweeping out of its top/bottom (which caused crossing/tangled lines).
 export function chooseSockets(parentEl, childEl) {
     const pr = parentEl.getBoundingClientRect();
     const cr = childEl.getBoundingClientRect();
-    const pcx = (pr.left + pr.right) / 2, pcy = (pr.top + pr.bottom) / 2;
-    const ccx = (cr.left + cr.right) / 2, ccy = (cr.top + cr.bottom) / 2;
-    const dx = ccx - pcx, dy = ccy - pcy;
-    if (Math.abs(dx) >= Math.abs(dy)) {
-        return { startSocket: dx >= 0 ? "right" : "left", endSocket: dx >= 0 ? "left" : "right" };
-    } else {
-        return { startSocket: dy >= 0 ? "bottom" : "top", endSocket: dy >= 0 ? "top" : "bottom" };
-    }
+    const pcx = (pr.left + pr.right) / 2;
+    const ccx = (cr.left + cr.right) / 2;
+    const childIsRight = ccx >= pcx;
+    return {
+        startSocket: childIsRight ? "right" : "left",
+        endSocket: childIsRight ? "left" : "right",
+    };
 }
 
 // Rebuild all child connection lines for a given parent.
@@ -37,7 +39,7 @@ export function updateConnections(parent) {
         const sockets = chooseSockets(parent, child);
         if (typeof LeaderLine === 'undefined') return;
         const line = new LeaderLine(parent, child, {
-            ...{ color: "#94a3b8", size: 3, path: "magnet", startPlug: "behind", endPlug: "arrow2" },
+            ...{ color: "#94a3b8", size: 2, path: "fluid", startPlug: "behind", endPlug: "behind" },
             startSocket: sockets.startSocket,
             endSocket: sockets.endSocket,
         });

@@ -1,6 +1,6 @@
 import { $, getChildren } from "/static/util.js";
 import { store, recordHistory } from "/static/js/state.js";
-import { layoutChildren } from "/static/js/layout.js";
+import { smartLayout } from "/static/js/layout.js";
 import { updateConnections, repositionAllLines } from "/static/js/connections.js";
 
 console.log("[nodes] loaded");
@@ -60,12 +60,12 @@ export function startEditing(node) {
     content.removeEventListener("keydown", keyHandler);
     content.removeEventListener("input", onInput);
     autoExpandWidth(node);
-    layoutChildren(node);
+    smartLayout(node);
     const parentId = node.dataset.parent;
     if (parentId) {
       const parentNode = document.querySelector(`[data-id="${parentId}"]`);
       if (parentNode) {
-        layoutChildren(parentNode);
+        smartLayout(parentNode);
         updateConnections(parentNode);
       }
     }
@@ -86,12 +86,12 @@ export function startEditing(node) {
 
   function onInput() {
     autoExpandWidth(node);
-    layoutChildren(node);
+    smartLayout(node);
     const parentId = node.dataset.parent;
     if (parentId) {
       const parentNode = document.querySelector(`[data-id="${parentId}"]`);
       if (parentNode) {
-        layoutChildren(parentNode);
+        smartLayout(parentNode);
         updateConnections(parentNode);
       }
     }
@@ -125,10 +125,10 @@ export function attachEvents(node) {
       const c = $(".content", node);
       if (!c || c.textContent.trim() === "") return;
       const child = createNode(node);
-      layoutChildren(node);
+      smartLayout(node);
       updateConnections(node);
       updateNodeButtons(node);
-      selectNode(child);
+      startEditing(child);
     });
   }
 
@@ -142,10 +142,10 @@ export function attachEvents(node) {
       const parentNode = document.querySelector(`[data-id="${parentId}"]`);
       if (!parentNode) return;
       const sib = createNode(parentNode);
-      layoutChildren(parentNode);
+      smartLayout(parentNode);
       updateConnections(parentNode);
       updateNodeButtons(parentNode);
-      selectNode(sib);
+      startEditing(sib);
     });
   }
 
@@ -199,7 +199,7 @@ export function createNode(parentNode) {
 
   node.innerHTML = `
     <div class="color-picker"></div>
-    <div class="content" contenteditable="false">new node</div>
+    <div class="content" contenteditable="false"></div>
     <button class="add-child" title="Add child node">+</button>
     <button class="add-sibling" title="Add sibling node">+</button>
   `;
@@ -210,7 +210,7 @@ export function createNode(parentNode) {
 
   const refRect = parentNode.getBoundingClientRect();
   const canvasRect = store.canvas.getBoundingClientRect();
-  node.style.left = (refRect.right - canvasRect.left) / store.scale + 100 + "px";
+  node.style.left = (refRect.right - canvasRect.left) / store.scale + 60 + "px";
   node.style.top = (refRect.top - canvasRect.top) / store.scale + "px";
 
   attachEvents(node);

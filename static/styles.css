@@ -44,6 +44,14 @@ body {
     padding-left: 16px;
 }
 
+/* Placeholder shown for a blank node (new nodes start empty so they can't
+   spawn children/siblings until labeled). */
+.node .content:empty::before {
+    content: "new node";
+    color: #9CA3AF;
+    font-style: italic;
+}
+
 .node.selected {
     outline: 2px solid #3B82F6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);

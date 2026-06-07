@@ -4,32 +4,54 @@ import { store, recordHistory } from "/static/js/state.js";
 import { updateConnections, repositionAllLines } from "/static/js/connections.js";
 import { applyTransform } from "/static/js/transform.js";
 
-// Compute a subtree "size" used for vertical spacing (leaf-weighted).
+// Tight vertical gap between adjacent sibling subtrees.
+const V_GAP = 12;
+// Horizontal gap between a parent's right edge and its children's left edge.
+const H_GAP = 50;
+
+// Bottom-up measurement: each subtree's vertical footprint is the MAX of
+// (its own node height) and (the sum of its children's subtree footprints).
+// This packs bushy branches only as tall as they actually need to be —
+// unlike leaf-counting, which multiplies spacing by descendants.
 export function computeSubtreeSize(node) {
     const children = getChildren(node);
-    if (children.length === 0) { store.subtreeSizes[node.dataset.id] = 1; return 1; }
-    let total = 0; children.forEach((c) => { total += computeSubtreeSize(c); });
-    store.subtreeSizes[node.dataset.id] = total; return total;
+    const ownHeight = node.offsetHeight + V_GAP;
+    if (children.length === 0) {
+        store.subtreeSizes[node.dataset.id] = ownHeight;
+        return ownHeight;
+    }
+    const childrenTotal = children.reduce(
+        (sum, c) => sum + computeSubtreeSize(c),
+        0
+    );
+    const height = Math.max(ownHeight, childrenTotal);
+    store.subtreeSizes[node.dataset.id] = height;
+    return height;
 }
 
-// Position direct children to the right of the parent with spacing based on subtree sizes.
+// Place direct children to the right of the parent, each centered within
+// its measured vertical slot. Total children span = sum of slot heights.
 export function layoutChildren(parent) {
-    const children = Array.from($$(`[data-parent="${parent.dataset.id}"]`));
+    const children = getChildren(parent);
     if (!children.length) return;
     const parentRect = parent.getBoundingClientRect();
     const canvasRect = store.canvas.getBoundingClientRect();
-    const spacing = 120;
-    const left = (parentRect.right - canvasRect.left) / store.scale + 100;
-    const heights = children.map((c) => store.subtreeSizes[c.dataset.id] || 1);
-    const totalHeight = heights.reduce((a, b) => a + b, 0);
-    let startY = (parentRect.top - canvasRect.top) / store.scale - (totalHeight * spacing) / 2;
+    const left = (parentRect.right - canvasRect.left) / store.scale + H_GAP;
+    const parentCenterY =
+        (parentRect.top - canvasRect.top) / store.scale + parent.offsetHeight / 2;
+
+    const slots = children.map(
+        (c) => store.subtreeSizes[c.dataset.id] || c.offsetHeight + V_GAP
+    );
+    const totalH = slots.reduce((a, b) => a + b, 0);
+
+    let y = parentCenterY - totalH / 2;
     children.forEach((child, idx) => {
-        const h = heights[idx];
-        startY += (h * spacing) / 2;
+        const slot = slots[idx];
         child.style.left = left + "px";
-        child.style.top = startY + "px";
+        child.style.top = y + slot / 2 - child.offsetHeight / 2 + "px";
         updateConnections(child);
-        startY += (h * spacing) / 2;
+        y += slot;
     });
     updateConnections(parent);
 }
@@ -38,6 +60,18 @@ export function layoutChildren(parent) {
 export function layoutSubtree(node) {
     layoutChildren(node);
     getChildren(node).forEach((c) => layoutSubtree(c));
+}
+
+// Full, correct reflow from the root. Used after any structural change
+// (creating a node, editing text that resizes a node) so every node's
+// position is consistent with the latest subtree sizes.
+export function smartLayout() {
+    const rootNode = document.querySelector(".root");
+    if (!rootNode) return;
+    store.subtreeSizes = {};
+    computeSubtreeSize(rootNode);
+    layoutSubtree(rootNode);
+    repositionAllLines();
 }
 
 // Recompute sizes and reflow the entire map, then persist history.
