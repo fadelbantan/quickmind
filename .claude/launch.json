@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "quickmind",
+      "runtimeExecutable": "/Users/fadelbantan/Documents/Projects/quickmind/venv/bin/python",
+      "runtimeArgs": ["-m", "flask", "run", "--port", "5001"],
+      "port": 5001
+    }
+  ]
+}

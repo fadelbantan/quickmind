@@ -2,10 +2,9 @@
 
 {% block content %}
 <div id="canvas">
-  <div class="node root" data-id="0" tabindex="0">
-    <div class="color-picker"></div>
-    <div class="content" contenteditable="false">click to edit</div>
-    <button class="add-child" title="Add child node">+</button>
+  <div id="world">
+    <svg id="links"></svg>
+    <div id="nodes"></div>
   </div>
 </div>
 
@@ -20,17 +19,17 @@
 <details id="shortcut-help">
   <summary>🔑 Shortcut<span class="hint">(Press ?)</span></summary>
   <ul>
-    <li>↩️ <strong>Enter</strong> – Add child</li>
-    <li>↔️ <strong>Tab</strong> – Add sibling</li>
-    <li>✏️ <strong>E</strong> / Double-click – Edit node</li>
-    <li>🚪 <strong>Esc</strong> – Exit edit mode</li>
+    <li>↔️ <strong>Tab</strong> – Add child</li>
+    <li>↩️ <strong>Enter</strong> – Add sibling</li>
+    <li>✏️ <strong>Space</strong> / Double-click – Edit node</li>
+    <li>🚪 <strong>Esc</strong> – Finish editing</li>
     <li>🧭 <strong>Arrow keys</strong> – Navigate nodes</li>
-    <li>🎯 <strong>C</strong> – Center map</li>
-    <li>🗑️ <strong>Backspace</strong> – Delete leaf node</li>
-    <li>🧹 <strong>L</strong> – Tidy layout</li>
-    <li>🔍 <strong>Ctrl/Cmd + -/+</strong> – Zoom</li>
-    <li>↩️ <strong>Ctrl/Cmd + Z</strong> – Undo</li>
-    <li>↪️ <strong>Ctrl/Cmd + Shift + Z</strong> – Redo</li>
+    <li>📂 <strong>.</strong> – Collapse / expand branch</li>
+    <li>🗑️ <strong>Backspace</strong> – Delete node</li>
+    <li>🧩 <strong>1 / 2 / 3 / 4</strong> – Balanced / Right / Left / Down</li>
+    <li>🎯 <strong>C</strong> – Recenter view</li>
+    <li>🔍 <strong>Ctrl/Cmd + Scroll</strong> – Zoom</li>
+    <li>↩️ <strong>Ctrl/Cmd + Z</strong> – Undo / Redo</li>
     <li>💾 <strong>Ctrl/Cmd + S</strong> – Save as image</li>
   </ul>
 </details>
