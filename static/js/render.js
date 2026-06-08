@@ -117,6 +117,12 @@ function connect(model) {
     `stroke-linecap="round"/>`;
 }
 
+// How early the curve breaks toward the child, as a fraction of the gap.
+// Small value ⇒ lines split right at the parent and fan out cleanly instead of
+// bundling into a "rope"; large value ⇒ lines stay parallel longer. 0.3 keeps
+// many-children fans readable.
+const CURVE_K = 0.3;
+
 // Build one "M..C.." segment from parent edge to child edge.
 function edgePath(p, c, horizontal) {
   const pcx = p.x + p.w / 2, pcy = p.y + p.h / 2;
@@ -128,15 +134,17 @@ function edgePath(p, c, horizontal) {
     sx = childRight ? p.x + p.w : p.x;
     ex = childRight ? c.x : c.x + c.w;
     sy = pcy; ey = ccy;
-    const midX = (sx + ex) / 2;
-    c1x = midX; c1y = sy; c2x = midX; c2y = ey;
+    const dx = ex - sx;
+    c1x = sx + dx * CURVE_K; c1y = sy;
+    c2x = ex - dx * CURVE_K; c2y = ey;
   } else {
     const childBelow = ccy >= pcy;
     sy = childBelow ? p.y + p.h : p.y;
     ey = childBelow ? c.y : c.y + c.h;
     sx = pcx; ex = ccx;
-    const midY = (sy + ey) / 2;
-    c1x = sx; c1y = midY; c2x = ex; c2y = midY;
+    const dy = ey - sy;
+    c1x = sx; c1y = sy + dy * CURVE_K;
+    c2x = ex; c2y = ey - dy * CURVE_K;
   }
   return `M ${sx} ${sy} C ${c1x} ${c1y} ${c2x} ${c2y} ${ex} ${ey}`;
 }
