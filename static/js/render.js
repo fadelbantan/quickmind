@@ -34,8 +34,8 @@ function createNodeEl(node) {
   el.innerHTML = `
     <div class="color-picker"></div>
     <div class="content" contenteditable="false"></div>
-    <button class="add-child" title="Add child (Tab)">+</button>
-    <button class="add-sibling" title="Add sibling (Enter)">+</button>
+    <button class="add-child" title="Add child (Enter)">+</button>
+    <button class="add-sibling" title="Add sibling (Tab)">+</button>
     <button class="collapse-toggle" title="Collapse / expand"></button>`;
   nodesLayer.appendChild(el);
   return el;

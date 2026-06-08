@@ -131,10 +131,10 @@ function startEdit(id, { selectAll = true } = {}) {
     if (e.key === "Escape") { e.preventDefault(); finish(); }
     else if (e.key === "Enter") {
       e.preventDefault();
-      finish(() => branch("sibling", id));
+      finish(() => branch("child", id));
     } else if (e.key === "Tab") {
       e.preventDefault();
-      finish(() => branch("child", id));
+      finish(() => branch("sibling", id));
     }
     e.stopPropagation(); // keep global shortcuts out of the editor
   };
@@ -234,9 +234,9 @@ function onKeyDown(e) {
 
   const node = selectedNode();
   switch (e.key) {
-    case "Tab": e.preventDefault(); if (node) branch("child", node.id); break;
-    case "Enter": e.preventDefault(); if (node) branch("sibling", node.id); break;
-    case " ": case "F2":
+    case "Enter": e.preventDefault(); if (node) branch("child", node.id); break;
+    case "Tab": e.preventDefault(); if (node) branch("sibling", node.id); break;
+    case " ": case "F2": case "e": case "E":
       e.preventDefault(); if (node) startEdit(node.id); break;
     case "Backspace": case "Delete":
       e.preventDefault(); deleteSelected(); break;
