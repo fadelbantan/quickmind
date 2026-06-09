@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="qm-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#qm-grad)"/>
+  <!-- mind-map mark: a root node branching to two children -->
+  <g stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round">
+    <path d="M10 16 C 14 16, 15 9.5, 21 9.5"/>
+    <path d="M10 16 C 14 16, 15 22.5, 21 22.5"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="9.5" cy="16" r="3.2"/>
+    <circle cx="22" cy="9.5" r="2.6"/>
+    <circle cx="22" cy="22.5" r="2.6"/>
+  </g>
+</svg>

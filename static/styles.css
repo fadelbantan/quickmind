@@ -240,10 +240,45 @@ body {
     background: var(--accent);
 }
 
+/* ─── Brand / logo ─────────────────────────────────────────────────────────*/
+#brand {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    padding: 7px 14px 7px 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px var(--panel-shadow);
+    user-select: none;
+}
+
+.brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: block;
+}
+
+.brand-name {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
 /* ─── Floating panels ──────────────────────────────────────────────────────*/
 #controls {
     position: fixed;
-    top: 16px;
+    top: 72px;
     left: 16px;
     z-index: 1000;
     background: var(--panel-bg);
@@ -312,7 +347,7 @@ body {
 
 #shortcut-help {
     position: fixed;
-    top: 128px;
+    top: 184px;
     left: 16px;
     z-index: 1000;
     background: var(--panel-bg);
@@ -406,7 +441,7 @@ body {
 
 #save-bar {
     position: fixed;
-    top: 72px;
+    top: 128px;
     left: 16px;
     z-index: 1000;
     background: var(--panel-bg);
