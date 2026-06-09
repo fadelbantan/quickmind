@@ -17,6 +17,19 @@ import { layout } from "/static/js/engine.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
+// Choose dark or light text for a given background so it stays readable.
+// Uses perceived (sRGB-weighted) luminance: bright bg → dark text, and
+// dark bg → light text.
+function readableText(bg) {
+  const hex = String(bg).trim().replace("#", "");
+  if (hex.length < 6) return ""; // unknown format → let CSS decide
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "#1f2937" : "#f8fafc";
+}
+
 let nodesLayer = null;  // div holding .node elements
 let linksLayer = null;  // <svg> holding connector paths
 const els = new Map();  // id → element
@@ -57,8 +70,12 @@ function reconcile(model) {
     el.classList.toggle("collapsed", node.collapsed && node.children.length > 0);
     el.style.background = node.color || "";
 
-    // don't clobber text while the user is editing this node (cursor!)
     const content = el.querySelector(".content");
+    // Pick readable text for the chosen background; fall back to the theme
+    // color when the node uses the default (no custom color).
+    content.style.color = node.color ? readableText(node.color) : "";
+
+    // don't clobber text while the user is editing this node (cursor!)
     if (model.editingId !== node.id && content.textContent !== node.text) {
       content.textContent = node.text;
     }

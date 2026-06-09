@@ -23,12 +23,23 @@ let model;
 let canvas, world;
 const view = { x: 0, y: 0, scale: 1 };
 const history = { stack: [], index: -1 };
-const NODE_COLORS = [null, "#fef3c7", "#dbeafe", "#dcfce7", "#fce7f3", "#e9d5ff"];
+const NODE_COLORS = [
+  null,                                                   // default (theme)
+  "#fde68a", "#bfdbfe", "#bbf7d0", "#fbcfe8", "#ddd6fe",  // soft → dark text
+  "#f59e0b", "#3b82f6", "#10b981", "#ec4899", "#8b5cf6",  // bold → light text
+  "#ef4444", "#1e293b",                                   // strong / dark
+];
 
 // ── view transform ─────────────────────────────────────────────────────────
+const GRID_BASE = 26; // dot spacing in world units
 function applyView() {
   world.style.transform =
     `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+  // Make the dot grid pan & zoom in lockstep with the map.
+  if (canvas) {
+    canvas.style.setProperty("--grid-size", GRID_BASE * view.scale + "px");
+    canvas.style.setProperty("--grid-pos", `${view.x}px ${view.y}px`);
+  }
   const zd = $("#zoom-display");
   if (zd) zd.textContent = Math.round(view.scale * 100) + "%";
 }
@@ -36,6 +47,30 @@ function centerView() {
   view.x = canvas.clientWidth / 2;
   view.y = canvas.clientHeight / 2;
   applyView();
+}
+
+// ── theme (dark / light) ────────────────────────────────────────────────────
+const ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const btn = $("#theme-toggle");
+  // show the icon of the mode you'd switch TO
+  if (btn) btn.innerHTML = theme === "dark" ? ICON_SUN : ICON_MOON;
+  try { localStorage.setItem("quickmind_theme", theme); } catch (_) { /* ignore */ }
+}
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(next);
+}
+function initTheme() {
+  let theme = null;
+  try { theme = localStorage.getItem("quickmind_theme"); } catch (_) { /* ignore */ }
+  if (!theme) {
+    theme = window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  applyTheme(theme);
 }
 
 // ── render / history ───────────────────────────────────────────────────────
@@ -274,6 +309,7 @@ function onNodesDblClick(e) {
 function boot() {
   canvas = $("#canvas");
   world = $("#world");
+  initTheme();
   initRender({ nodes: $("#nodes"), links: $("#links") });
 
   // restore prior session or start fresh
@@ -304,6 +340,7 @@ function boot() {
   $("#zoom-in")?.addEventListener("click", () => zoomBy(1.1));
   $("#zoom-out")?.addEventListener("click", () => zoomBy(1 / 1.1));
   $("#save-btn")?.addEventListener("click", exportPng);
+  $("#theme-toggle")?.addEventListener("click", toggleTheme);
 
   // start by editing the root so the user can type immediately
   if (!restored) startEdit(model.rootId);
@@ -311,7 +348,9 @@ function boot() {
 
 function exportPng() {
   if (typeof html2canvas === "undefined") return;
-  html2canvas(canvas, { backgroundColor: "#F4F5F7" }).then((c) => {
+  const bg = getComputedStyle(document.documentElement)
+    .getPropertyValue("--bg").trim() || "#F4F5F7";
+  html2canvas(canvas, { backgroundColor: bg }).then((c) => {
     const link = document.createElement("a");
     link.download = "mindmap.png";
     link.href = c.toDataURL("image/png");

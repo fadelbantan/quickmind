@@ -1,10 +1,68 @@
+/* ─── Theme tokens ─────────────────────────────────────────────────────────
+   All colors flow through these variables so light/dark is a single switch
+   on <html data-theme="...">. */
+:root,
+:root[data-theme="light"] {
+    --bg: #F4F5F7;
+    --grid-dot: #d3d9e3;
+    --text: #1F2937;
+    --muted: #6B7280;
+    --faint: #9CA3AF;
+
+    --node-bg: #ffffff;
+    --node-border: #E5E7EB;
+    --root-border: #cbd5e1;
+    --line: #b3bccb;
+
+    --panel-bg: #ffffff;
+    --panel-border: #E5E7EB;
+    --panel-shadow: rgba(0, 0, 0, 0.06);
+    --hover-bg: #F3F4F6;
+
+    --accent: #3B82F6;
+    --accent-hover: #2563EB;
+    --accent-soft: rgba(59, 130, 246, 0.2);
+
+    --kbd-bg: #F9FAFB;
+    --kbd-border: #D1D5DB;
+    --node-shadow: rgba(0, 0, 0, 0.08);
+    --node-shadow-hover: rgba(0, 0, 0, 0.1);
+}
+
+:root[data-theme="dark"] {
+    --bg: #0f1117;
+    --grid-dot: #262b36;
+    --text: #e6e8ed;
+    --muted: #9aa3b2;
+    --faint: #6b7280;
+
+    --node-bg: #1b1f29;
+    --node-border: #2c323d;
+    --root-border: #3b4250;
+    --line: #3a4150;
+
+    --panel-bg: #1b1f29;
+    --panel-border: #2c323d;
+    --panel-shadow: rgba(0, 0, 0, 0.4);
+    --hover-bg: #262b36;
+
+    --accent: #3B82F6;
+    --accent-hover: #60a5fa;
+    --accent-soft: rgba(59, 130, 246, 0.28);
+
+    --kbd-bg: #262b36;
+    --kbd-border: #3b4250;
+    --node-shadow: rgba(0, 0, 0, 0.45);
+    --node-shadow-hover: rgba(0, 0, 0, 0.6);
+}
+
 body {
     margin: 0;
-    background: #F4F5F7;
+    background: var(--bg);
     font-family: 'Inter', sans-serif;
     height: 100vh;
     overflow: hidden;
-    color: #1F2937;
+    color: var(--text);
 }
 
 #canvas {
@@ -13,6 +71,12 @@ body {
     position: relative;
     overflow: hidden;
     cursor: grab;
+    background-color: var(--bg);
+    /* Dot grid. --grid-size and --grid-pos are updated by the view transform
+       so the grid pans and zooms together with the map. */
+    background-image: radial-gradient(circle, var(--grid-dot) 1.3px, transparent 1.3px);
+    background-size: var(--grid-size, 26px) var(--grid-size, 26px);
+    background-position: var(--grid-pos, 0 0);
 }
 
 #canvas.dragging {
@@ -39,30 +103,36 @@ body {
     height: 1px;
 }
 
+#links path {
+    stroke: var(--line);
+}
+
 .node {
     position: absolute;
     top: 0;
     left: 0;
-    background: #ffffff;
+    background: var(--node-bg);
+    color: var(--text);
     padding: 12px 18px;
     border-radius: 10px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid #E5E7EB;
+    box-shadow: 0 6px 12px var(--node-shadow);
+    border: 1px solid var(--node-border);
     cursor: pointer;
     min-width: 120px;
     max-width: 260px;
     /* transform is set by the renderer (translate to world coords); animate it */
-    transition: box-shadow 0.2s ease, transform 0.22s cubic-bezier(.4, 0, .2, 1);
+    transition: box-shadow 0.2s ease, transform 0.22s cubic-bezier(.4, 0, .2, 1),
+        background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .node:hover {
-    box-shadow: 0 10px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 16px var(--node-shadow-hover);
 }
 
 .node .content {
     font-size: 14px;
     line-height: 1.4;
-    color: #1F2937;
+    color: var(--text);
     cursor: text;
     padding-left: 16px;
 }
@@ -71,26 +141,26 @@ body {
    spawn children/siblings until labeled). */
 .node .content:empty::before {
     content: "new node";
-    color: #9CA3AF;
+    color: var(--faint);
     font-style: italic;
 }
 
 .node.selected {
-    outline: 2px solid #3B82F6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    outline: 2px solid var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 /* The root reads a touch bolder than its children. */
 .node.root {
     font-weight: 600;
-    border-color: #cbd5e1;
+    border-color: var(--root-border);
 }
 
 .color-picker {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: #e5e7eb;
+    background: var(--node-border);
     position: absolute;
     top: 6px;
     left: 8px;
@@ -112,7 +182,7 @@ body {
     height: 22px;
     border-radius: 50%;
     border: none;
-    background: #3B82F6;
+    background: var(--accent);
     color: #fff;
     cursor: pointer;
     font-weight: bold;
@@ -141,7 +211,7 @@ body {
 .add-child:hover,
 .add-sibling:hover,
 .collapse-toggle:hover {
-    background: #2563EB;
+    background: var(--accent-hover);
 }
 
 .add-child {
@@ -163,20 +233,21 @@ body {
     height: 18px;
     line-height: 18px;
     font-size: 13px;
-    background: #94a3b8;
+    background: var(--faint);
 }
 
 .node.collapsed .collapse-toggle {
-    background: #3B82F6;
+    background: var(--accent);
 }
 
+/* ─── Floating panels ──────────────────────────────────────────────────────*/
 #controls {
     position: fixed;
     top: 16px;
     left: 16px;
     z-index: 1000;
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
     padding: 6px 12px;
     border-radius: 10px;
     display: flex;
@@ -184,7 +255,7 @@ body {
     justify-content: space-between;
     gap: 8px;
     width: 240px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px var(--panel-shadow);
 }
 
 #controls button {
@@ -194,13 +265,13 @@ body {
     background: transparent;
     border: none;
     cursor: pointer;
-    color: #1F2937;
+    color: var(--text);
     transition: background 0.2s ease;
     border-radius: 6px;
 }
 
 #controls button:hover {
-    background: #F3F4F6;
+    background: var(--hover-bg);
 }
 
 #controls span {
@@ -210,20 +281,49 @@ body {
     text-align: center;
 }
 
+/* Theme toggle — top-right pill. */
+#theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text);
+    box-shadow: 0 2px 8px var(--panel-shadow);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+#theme-toggle:hover {
+    background: var(--hover-bg);
+}
+
+#theme-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
 #shortcut-help {
     position: fixed;
     top: 128px;
     left: 16px;
     z-index: 1000;
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
     padding: 6px 12px;
     border-radius: 10px;
     width: 270px;
     font-size: 13px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px var(--panel-shadow);
     transition: all 0.2s ease;
-    color: #111827;
+    color: var(--text);
 }
 
 #shortcut-help summary {
@@ -231,14 +331,14 @@ body {
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 8px;
-    color: #111827;
+    color: var(--text);
 }
 
 #shortcut-help .hint {
     font-weight: normal;
     font-size: 12px;
     margin-left: 6px;
-    color: #6B7280;
+    color: var(--muted);
 }
 
 /* Legend explaining the two platform modifier glyphs. */
@@ -248,7 +348,7 @@ body {
     gap: 5px;
     margin: 0 0 10px;
     font-size: 11.5px;
-    color: #6B7280;
+    color: var(--muted);
 }
 
 #shortcut-help ul {
@@ -264,7 +364,7 @@ body {
     gap: 6px;
     margin: 7px 0;
     line-height: 1.4;
-    color: #374151;
+    color: var(--text);
 }
 
 /* A group of one or more keycaps for a single shortcut. */
@@ -277,13 +377,13 @@ body {
 
 /* The "+" and "/" separators between caps. */
 #shortcut-help .keys span {
-    color: #9CA3AF;
+    color: var(--faint);
     font-size: 11px;
     margin: 0 1px;
 }
 
 #shortcut-help .muted {
-    color: #9CA3AF;
+    color: var(--faint);
     font-size: 11.5px;
 }
 
@@ -295,9 +395,9 @@ body {
     min-width: 12px;
     padding: 4px 6px;
     text-align: center;
-    color: #1F2937;
-    background: #F9FAFB;
-    border: 1px solid #D1D5DB;
+    color: var(--text);
+    background: var(--kbd-bg);
+    border: 1px solid var(--kbd-border);
     border-bottom-width: 2px;
     border-radius: 5px;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
@@ -309,15 +409,15 @@ body {
     top: 72px;
     left: 16px;
     z-index: 1000;
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
     padding: 6px 12px;
     border-radius: 10px;
     width: 240px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px var(--panel-shadow);
 }
 
 #save-bar button {
@@ -327,9 +427,10 @@ body {
     font-size: 14px;
     padding: 6px 12px;
     border-radius: 6px;
+    color: var(--text);
     transition: background 0.2s ease;
 }
 
 #save-bar button:hover {
-    background: #F3F4F6;
+    background: var(--hover-bg);
 }
