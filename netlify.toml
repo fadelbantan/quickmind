@@ -1,0 +1,6 @@
+# Netlify build config. Takes precedence over the UI build settings.
+# QuickMind is a static client-side app; we render the Flask template to
+# dist/ and publish that. No Node — ignore any "npm run build" UI setting.
+[build]
+  command = "python build.py"
+  publish = "dist"
