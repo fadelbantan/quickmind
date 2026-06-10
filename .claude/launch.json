@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "quickmind",
-      "runtimeExecutable": "/Users/fadelbantan/Documents/Projects/quickmind/venv/bin/python",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
       "runtimeArgs": ["-m", "flask", "run", "--port", "5001"],
       "port": 5001
     }

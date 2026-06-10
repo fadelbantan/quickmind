@@ -8,6 +8,9 @@
   </div>
 </div>
 
+<!-- floating color palette — positioned fixed, shown by JS -->
+<div id="color-palette"></div>
+
 <div id="brand">
   <img class="brand-mark" src="{{ url_for('static', filename='favicon.svg') }}" alt="QuickMind logo">
   <span class="brand-name">QuickMind</span>
@@ -18,10 +21,61 @@
   <span id="zoom-display">100%</span>
   <button id="zoom-in" title="Zoom In">+</button>
 </div>
-<button id="theme-toggle" title="Toggle dark / light mode"></button>
-<div id="save-bar">
-  <button id="save-btn" title="Save PNG">💾 Save PNG</button>
+
+<div id="layout-bar">
+  <button class="layout-btn" data-layout="balanced" title="Balanced layout (1)">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><line x1="10" y1="7" x2="5" y2="4"/><line x1="10" y1="7" x2="15" y2="4"/><line x1="10" y1="13" x2="5" y2="16"/><line x1="10" y1="13" x2="15" y2="16"/></svg>
+    Balanced
+  </button>
+  <button class="layout-btn" data-layout="right" title="Right layout (2)">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="10" r="3"/><line x1="8" y1="10" x2="12" y2="6"/><line x1="8" y1="10" x2="12" y2="14"/><circle cx="15" cy="6" r="2.2"/><circle cx="15" cy="14" r="2.2"/></svg>
+    Right
+  </button>
+  <button class="layout-btn" data-layout="left" title="Left layout (3)">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="15" cy="10" r="3"/><line x1="12" y1="10" x2="8" y2="6"/><line x1="12" y1="10" x2="8" y2="14"/><circle cx="5" cy="6" r="2.2"/><circle cx="5" cy="14" r="2.2"/></svg>
+    Left
+  </button>
+  <button class="layout-btn" data-layout="down" title="Down layout (4)">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="5" r="3"/><line x1="10" y1="8" x2="6" y2="12"/><line x1="10" y1="8" x2="14" y2="12"/><circle cx="6" cy="15" r="2.2"/><circle cx="14" cy="15" r="2.2"/></svg>
+    Down
+  </button>
 </div>
+
+<div id="save-bar">
+  <button id="open-btn" title="Open a saved mindmap (.json)">Open</button>
+  <div id="save-dropdown-wrap">
+    <button id="save-btn" title="Save (⌘S / Ctrl+S)">
+      Save
+      <svg class="caret" viewBox="0 0 10 6" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg>
+    </button>
+    <div id="save-menu">
+      <button data-fmt="json">
+        <span class="fmt-label">QuickMind <em>.json</em></span>
+        <span class="fmt-hint">Re-openable</span>
+      </button>
+      <button data-fmt="mm">
+        <span class="fmt-label">FreeMind <em>.mm</em></span>
+        <span class="fmt-hint">Universal</span>
+      </button>
+      <button data-fmt="md">
+        <span class="fmt-label">Markdown <em>.md</em></span>
+      </button>
+      <button data-fmt="svg">
+        <span class="fmt-label">SVG vector <em>.svg</em></span>
+      </button>
+      <div class="save-divider"></div>
+      <button data-fmt="png">
+        <span class="fmt-label">PNG image</span>
+      </button>
+      <button data-fmt="jpg">
+        <span class="fmt-label">JPEG image</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<button id="theme-toggle" title="Toggle dark / light mode"></button>
+
 <details id="shortcut-help">
   <summary>Shortcuts<span class="hint">(Press ?)</span></summary>
   <p class="legend"><kbd>⌘</kbd> Mac <span>·</span> <kbd>Ctrl</kbd> Windows</p>
@@ -37,7 +91,7 @@
     <li><span class="keys"><kbd>C</kbd></span> Recenter the view</li>
     <li><span class="keys"><kbd>⌘</kbd><span>/</span><kbd>Ctrl</kbd><span>+</span><kbd>Scroll</kbd></span> Zoom in / out</li>
     <li><span class="keys"><kbd>⌘</kbd><span>/</span><kbd>Ctrl</kbd><span>+</span><kbd>Z</kbd></span> Undo <span class="muted">(＋<kbd>⇧</kbd> to redo)</span></li>
-    <li><span class="keys"><kbd>⌘</kbd><span>/</span><kbd>Ctrl</kbd><span>+</span><kbd>S</kbd></span> Save as image</li>
+    <li><span class="keys"><kbd>⌘</kbd><span>/</span><kbd>Ctrl</kbd><span>+</span><kbd>S</kbd></span> Save menu</li>
   </ul>
 </details>
 {% endblock %}
