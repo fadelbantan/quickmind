@@ -62,17 +62,6 @@ export function visibleChildren(model, node) {
   return node.collapsed ? [] : childNodes(model, node);
 }
 
-// Walk the whole tree depth-first from root, calling fn(node, depth).
-export function walk(model, fn) {
-  const visit = (id, depth) => {
-    const n = model.nodes.get(id);
-    if (!n) return;
-    fn(n, depth);
-    n.children.forEach((c) => visit(c, depth + 1));
-  };
-  visit(model.rootId, 0);
-}
-
 // ── mutations ───────────────────────────────────────────────────────────
 // Each returns the affected node so callers can select / edit it.
 

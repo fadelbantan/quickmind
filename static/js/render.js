@@ -15,8 +15,6 @@
 import { LAYOUT, childNodes, visibleChildren } from "/static/js/model.js";
 import { layout } from "/static/js/engine.js";
 
-const SVG_NS = "http://www.w3.org/2000/svg";
-
 // Choose dark or light text for a given background so it stays readable.
 // Uses perceived (sRGB-weighted) luminance: bright bg → dark text, and
 // dark bg → light text.

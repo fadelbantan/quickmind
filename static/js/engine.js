@@ -23,7 +23,7 @@
 
 import { LAYOUT, getRoot, visibleChildren } from "/static/js/model.js";
 
-export const GAPS = {
+const GAPS = {
   DEPTH: 80,    // distance between consecutive levels
   BREADTH: 30,  // distance between sibling subtrees (vertical breathing room
                 // — the main lever that keeps connector lines from crowding)
