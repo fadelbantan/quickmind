@@ -276,11 +276,20 @@ body {
 }
 
 /* ─── Floating panels ──────────────────────────────────────────────────────*/
-#controls {
+/* All left-hand panels live in one column; opening the save menu grows its
+   panel in flow, smoothly pushing the shortcuts panel down. */
+#side-panel {
     position: fixed;
     top: 72px;
     left: 16px;
     z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 240px;
+}
+
+#controls {
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     padding: 6px 12px;
@@ -289,7 +298,7 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    width: 240px;
+    box-sizing: border-box;
     box-shadow: 0 2px 8px var(--panel-shadow);
 }
 
@@ -346,15 +355,11 @@ body {
 }
 
 #shortcut-help {
-    position: fixed;
-    top: 244px;
-    left: 16px;
-    z-index: 1000;
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     padding: 6px 12px;
     border-radius: 10px;
-    width: 270px;
+    box-sizing: border-box;
     font-size: 13px;
     box-shadow: 0 2px 8px var(--panel-shadow);
     transition: all 0.2s ease;
@@ -441,10 +446,6 @@ body {
 
 /* ─── Layout bar ────────────────────────────────────────────────────────────*/
 #layout-bar {
-    position: fixed;
-    top: 124px;
-    left: 16px;
-    z-index: 1000;
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     padding: 5px 8px;
@@ -452,7 +453,6 @@ body {
     display: flex;
     align-items: center;
     gap: 2px;
-    width: 240px;
     box-sizing: border-box;
     box-shadow: 0 2px 8px var(--panel-shadow);
 }
@@ -501,21 +501,20 @@ body {
 
 /* ─── Save bar ──────────────────────────────────────────────────────────────*/
 #save-bar {
-    position: fixed;
-    top: 176px;
-    left: 16px;
-    /* above #shortcut-help (1000) so the open save menu isn't hidden behind it */
-    z-index: 1010;
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     padding: 5px 8px;
     border-radius: 10px;
-    width: 240px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px var(--panel-shadow);
+}
+
+.save-row {
     display: flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 8px var(--panel-shadow);
 }
 
 #open-btn {
@@ -537,13 +536,8 @@ body {
     background: var(--hover-bg);
 }
 
-#save-dropdown-wrap {
-    position: relative;
-    flex: 1;
-}
-
 #save-btn {
-    width: 100%;
+    flex: 1;
     height: 32px;
     border: none;
     background: var(--accent);
@@ -574,29 +568,25 @@ body {
     transition: transform 0.15s ease;
 }
 
-#save-menu.open ~ #save-btn .caret,
-#save-dropdown-wrap:has(#save-menu.open) #save-btn .caret {
+#save-bar:has(#save-menu.open) #save-btn .caret {
     transform: rotate(180deg);
 }
 
+/* In-flow accordion: expanding pushes the panels below it down smoothly. */
 #save-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 10px;
-    padding: 4px;
-    box-shadow: 0 4px 16px var(--panel-shadow);
-    z-index: 1100;
-    display: none;
+    display: flex;
     flex-direction: column;
-    min-width: 160px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    transition: max-height 0.28s ease, opacity 0.2s ease, margin-top 0.28s ease;
 }
 
 #save-menu.open {
-    display: flex;
+    max-height: 240px;
+    opacity: 1;
+    margin-top: 8px;
 }
 
 #save-menu button {
@@ -635,12 +625,6 @@ body {
     font-size: 11px;
     color: var(--faint);
     flex-shrink: 0;
-}
-
-.save-divider {
-    height: 1px;
-    background: var(--panel-border);
-    margin: 3px 4px;
 }
 
 /* ─── Color palette popup ───────────────────────────────────────────────────*/

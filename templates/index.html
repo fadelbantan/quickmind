@@ -16,6 +16,8 @@
   <span class="brand-name">QuickMind</span>
 </div>
 
+<div id="side-panel">
+
 <div id="controls">
   <button id="zoom-out" title="Zoom Out">-</button>
   <span id="zoom-display">100%</span>
@@ -42,39 +44,33 @@
 </div>
 
 <div id="save-bar">
-  <button id="open-btn" title="Open a saved mindmap (.json)">Open</button>
-  <div id="save-dropdown-wrap">
+  <div class="save-row">
+    <button id="open-btn" title="Open a saved mindmap (.json)">Open</button>
     <button id="save-btn" title="Save (⌘S / Ctrl+S)">
       Save
       <svg class="caret" viewBox="0 0 10 6" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg>
     </button>
-    <div id="save-menu">
-      <button data-fmt="json">
-        <span class="fmt-label">QuickMind <em>.json</em></span>
-        <span class="fmt-hint">Re-openable</span>
-      </button>
-      <button data-fmt="mm">
-        <span class="fmt-label">FreeMind <em>.mm</em></span>
-        <span class="fmt-hint">Universal</span>
-      </button>
-      <button data-fmt="md">
-        <span class="fmt-label">Markdown <em>.md</em></span>
-      </button>
-      <button data-fmt="svg">
-        <span class="fmt-label">SVG vector <em>.svg</em></span>
-      </button>
-      <div class="save-divider"></div>
-      <button data-fmt="png">
-        <span class="fmt-label">PNG image</span>
-      </button>
-      <button data-fmt="jpg">
-        <span class="fmt-label">JPEG image</span>
-      </button>
-    </div>
+  </div>
+  <div id="save-menu">
+    <button data-fmt="json">
+      <span class="fmt-label">QuickMind <em>.json</em></span>
+      <span class="fmt-hint">Re-openable</span>
+    </button>
+    <button data-fmt="mm">
+      <span class="fmt-label">FreeMind <em>.mm</em></span>
+      <span class="fmt-hint">Universal</span>
+    </button>
+    <button data-fmt="md">
+      <span class="fmt-label">Markdown <em>.md</em></span>
+    </button>
+    <button data-fmt="svg">
+      <span class="fmt-label">SVG vector <em>.svg</em></span>
+    </button>
+    <button data-fmt="png">
+      <span class="fmt-label">PNG image <em>.png</em></span>
+    </button>
   </div>
 </div>
-
-<button id="theme-toggle" title="Toggle dark / light mode"></button>
 
 <details id="shortcut-help">
   <summary>Shortcuts<span class="hint">(Press ?)</span></summary>
@@ -94,4 +90,8 @@
     <li><span class="keys"><kbd>⌘</kbd><span>/</span><kbd>Ctrl</kbd><span>+</span><kbd>S</kbd></span> Save menu</li>
   </ul>
 </details>
+
+</div><!-- /side-panel -->
+
+<button id="theme-toggle" title="Toggle dark / light mode"></button>
 {% endblock %}

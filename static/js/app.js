@@ -429,7 +429,10 @@ function _svgWrapText(text, maxW) {
   return lines.length ? lines : [""];
 }
 
-function exportSvg() {
+// Build the full SVG document string + its pixel size. Shared by the SVG
+// download and the PNG export (rasterizing our own SVG keeps connector lines
+// intact — html2canvas couldn't capture the overflow:visible link layer).
+function buildSvg() {
   const isDark = document.documentElement.dataset.theme === "dark";
   const bg = isDark ? "#0f1117" : "#F4F5F7";
   const lineColor = isDark ? "#3a4150" : "#b3bccb";
@@ -485,20 +488,34 @@ function exportSvg() {
     `  <path d="${paths.join(" ")}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linecap="round"/>\n` +
     `  ${nodeEls.join("\n  ")}\n` +
     `</svg>`;
-  download("mindmap.svg", svgStr, "image/svg+xml");
+  return { svgStr, w: W, h: H };
 }
 
-// ── export: PNG / JPG ─────────────────────────────────────────────────────────
-function exportRaster(fmt) {
-  if (typeof html2canvas === "undefined") return;
-  const bg = getComputedStyle(document.documentElement)
-    .getPropertyValue("--bg").trim() || "#F4F5F7";
-  html2canvas(canvas, { backgroundColor: bg }).then((c) => {
+function exportSvg() {
+  download("mindmap.svg", buildSvg().svgStr, "image/svg+xml");
+}
+
+// ── export: PNG (rasterized from the SVG at 2×) ──────────────────────────────
+function exportPng() {
+  const { svgStr, w, h } = buildSvg();
+  const url = URL.createObjectURL(new Blob([svgStr], { type: "image/svg+xml" }));
+  const img = new Image();
+  img.onload = () => {
+    const scale = 2;
+    const c = document.createElement("canvas");
+    c.width = Math.round(w * scale);
+    c.height = Math.round(h * scale);
+    const ctx = c.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
     const a = document.createElement("a");
-    a.download = fmt === "jpg" ? "mindmap.jpg" : "mindmap.png";
-    a.href = c.toDataURL(fmt === "jpg" ? "image/jpeg" : "image/png", 0.92);
+    a.download = "mindmap.png";
+    a.href = c.toDataURL("image/png");
     a.click();
-  });
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); alert("PNG export failed."); };
+  img.src = url;
 }
 
 // ── save menu ─────────────────────────────────────────────────────────────────
@@ -509,8 +526,7 @@ function handleExport(fmt) {
     case "md":   return exportMd();
     case "mm":   return exportMM();
     case "svg":  return exportSvg();
-    case "png":  return exportRaster("png");
-    case "jpg":  return exportRaster("jpg");
+    case "png":  return exportPng();
   }
 }
 
@@ -526,7 +542,7 @@ function openSaveMenu() {
 }
 
 function _closeSaveMenuOutside(e) {
-  if (!e.target.closest("#save-dropdown-wrap")) closeSaveMenu();
+  if (!e.target.closest("#save-bar")) closeSaveMenu();
 }
 
 function closeSaveMenu() {

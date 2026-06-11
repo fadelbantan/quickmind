@@ -4,8 +4,8 @@
     {
       "name": "quickmind",
       "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
-      "runtimeArgs": ["-m", "flask", "run", "--port", "5001"],
-      "port": 5001
+      "runtimeArgs": ["-m", "flask", "run", "--port", "5002"],
+      "port": 5002
     }
   ]
 }
