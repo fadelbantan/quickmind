@@ -1,4 +1,4 @@
-/* ─── Theme tokens ─────────────────────────────────────────────────────────
+/* Theme tokens
    All colors flow through these variables so light/dark is a single switch
    on <html data-theme="...">. */
 :root,
@@ -240,7 +240,7 @@ body {
     background: var(--accent);
 }
 
-/* ─── Brand / logo ─────────────────────────────────────────────────────────*/
+/* Brand / logo */
 #brand {
     position: fixed;
     top: 16px;
@@ -249,6 +249,8 @@ body {
     display: flex;
     align-items: center;
     gap: 9px;
+    width: 240px;
+    box-sizing: border-box;
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     padding: 7px 14px 7px 8px;
@@ -275,7 +277,7 @@ body {
     color: transparent;
 }
 
-/* ─── Floating panels ──────────────────────────────────────────────────────*/
+/* Floating panels */
 /* All left-hand panels live in one column; opening the save menu grows its
    panel in flow, smoothly pushing the shortcuts panel down. */
 #side-panel {
@@ -325,7 +327,7 @@ body {
     text-align: center;
 }
 
-/* Theme toggle — top-right pill. */
+/* Theme toggle - top-right pill. */
 #theme-toggle {
     position: fixed;
     top: 16px;
@@ -349,13 +351,16 @@ body {
     background: var(--hover-bg);
 }
 
-/* ─── Builder credit ───────────────────────────────────────────────────────*/
+/* Builder credit */
 #credit {
     position: fixed;
     bottom: 14px;
     right: 16px;
     z-index: 1000;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
     font-weight: 500;
     color: var(--muted);
     text-decoration: none;
@@ -366,6 +371,17 @@ body {
     box-shadow: 0 2px 8px var(--panel-shadow);
     transition: color 0.2s ease, background 0.2s ease;
     user-select: none;
+}
+
+#credit img {
+    height: 18px;
+    width: auto;
+    display: block;
+}
+
+/* The logo art is solid black; invert it in dark mode so it stays visible. */
+:root[data-theme="dark"] #credit img {
+    filter: invert(1);
 }
 
 #credit:hover {
@@ -451,7 +467,7 @@ body {
     font-size: 11.5px;
 }
 
-/* Keycap — looks like a physical key, works for both glyphs and words. */
+/* Keycap - looks like a physical key, works for both glyphs and words. */
 #shortcut-help kbd {
     font-family: 'Inter', sans-serif;
     font-size: 11px;
@@ -468,7 +484,7 @@ body {
     white-space: nowrap;
 }
 
-/* ─── Layout bar ────────────────────────────────────────────────────────────*/
+/* Layout bar */
 #layout-bar {
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
@@ -523,7 +539,7 @@ body {
     stroke: var(--accent);
 }
 
-/* ─── Save bar ──────────────────────────────────────────────────────────────*/
+/* Save bar */
 #save-bar {
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
@@ -651,7 +667,7 @@ body {
     flex-shrink: 0;
 }
 
-/* ─── Color palette popup ───────────────────────────────────────────────────*/
+/* Color palette popup */
 #color-palette {
     position: fixed;
     z-index: 2000;
@@ -700,7 +716,7 @@ body {
     border-color: var(--muted);
 }
 
-/* ─── Suppress transform transition during instant layout switches ──────────*/
+/* Suppress transform transition during instant layout switches */
 #world.instant .node {
     transition: box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
 }

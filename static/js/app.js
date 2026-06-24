@@ -1,12 +1,10 @@
-// ─────────────────────────────────────────────────────────────────────────
-// app.js — bootstrap + interaction layer.
+// app.js - bootstrap + interaction layer.
 //
 // Interactions only ever MUTATE THE MODEL, then call commit()/refresh().
-// They never compute geometry — the engine owns that.
+// They never compute geometry - the engine owns that.
 //
-//   commit()  = model changed structurally → render + push history + autosave
-//   refresh() = view-only change (selection) → render, no history
-// ─────────────────────────────────────────────────────────────────────────
+//   commit()  = model changed structurally -> render + push history + autosave
+//   refresh() = view-only change (selection) -> render, no history
 
 import {
   LAYOUT, createModel, deserialize, serialize,
@@ -18,7 +16,7 @@ import { initRender, render, elementFor, contentOf } from "/static/js/render.js"
 const $ = (s) => document.querySelector(s);
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
-// ── module state ─────────────────────────────────────────────────────────
+// module state
 let model;
 let canvas, world;
 const view = { x: 0, y: 0, scale: 1 };
@@ -30,7 +28,7 @@ const NODE_COLORS = [
   "#ef4444", "#1e293b",                                    // strong / dark
 ];
 
-// ── view transform ─────────────────────────────────────────────────────────
+// view transform
 const GRID_BASE = 26;
 function applyView() {
   world.style.transform =
@@ -48,7 +46,7 @@ function centerView() {
   applyView();
 }
 
-// ── theme (dark / light) ────────────────────────────────────────────────────
+// theme (dark / light)
 const ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
 
@@ -71,7 +69,7 @@ function initTheme() {
   applyTheme(theme);
 }
 
-// ── render / history ───────────────────────────────────────────────────────
+// render / history
 function refresh() {
   render(model);
   updateLayoutButtons();
@@ -110,7 +108,7 @@ function autosave() {
   } catch (_) { /* ignore quota */ }
 }
 
-// ── selection & navigation ──────────────────────────────────────────────────
+// selection & navigation
 function select(id) {
   if (!model.nodes.has(id)) return;
   model.selectedId = id;
@@ -121,7 +119,7 @@ function selectedNode() { return getNode(model, model.selectedId); }
 
 // Spatial navigation: arrows follow the VISUAL direction on screen, using the
 // engine-computed positions. In horizontal layouts (balanced/right/left) the
-// depth axis is x — left/right walks parent↔child whichever way they actually
+// depth axis is x - left/right walks parent<->child whichever way they actually
 // sit, up/down moves between siblings. In the down layout it's rotated.
 function navigate(dir) {
   const node = selectedNode();
@@ -137,7 +135,7 @@ function navigate(dir) {
     ? (dir === "left" || dir === "right")
     : (dir === "up" || dir === "down");
   const sign = (dir === "left" || dir === "up") ? -1 : 1;
-  const depthPos = horizontal ? cx : cy;   // along parent→child axis
+  const depthPos = horizontal ? cx : cy;   // along parent->child axis
   const crossPos = horizontal ? cy : cx;   // along sibling axis
 
   if (isDepthMove) {
@@ -154,7 +152,7 @@ function navigate(dir) {
   } else {
     // nearest sibling in that visual direction
     let cands = sibs.filter((s) => Math.sign(crossPos(s) - crossPos(node)) === sign);
-    // in balanced mode siblings can sit across the root — prefer the same side
+    // in balanced mode siblings can sit across the root - prefer the same side
     if (parent && cands.length > 1) {
       const side = Math.sign(depthPos(node) - depthPos(parent));
       const sameSide = cands.filter(
@@ -169,7 +167,7 @@ function navigate(dir) {
   }
 }
 
-// ── editing ─────────────────────────────────────────────────────────────────
+// editing
 function startEdit(id, { selectAll = true } = {}) {
   model.editingId = id;
   refresh();
@@ -226,7 +224,7 @@ function branch(kind, fromId) {
   }
 }
 
-// ── node ops ─────────────────────────────────────────────────────────────────
+// node ops
 function deleteSelected() {
   const node = selectedNode();
   if (!node || isRoot(model, node.id)) return;
@@ -235,11 +233,11 @@ function deleteSelected() {
   commit();
 }
 
-// ── layout ────────────────────────────────────────────────────────────────────
+// layout
 function setLayoutMode(mode) {
   model.layoutMode = mode;
   // Suppress the CSS transform transition so connectors and nodes snap to new
-  // positions together — without this, nodes animate while connectors are
+  // positions together - without this, nodes animate while connectors are
   // already drawn at the final positions, making edges look misaligned.
   world.classList.add("instant");
   commit();
@@ -252,7 +250,7 @@ function updateLayoutButtons() {
   });
 }
 
-// ── color picker (palette popup) ──────────────────────────────────────────────
+// color picker (palette popup)
 let _paletteNodeId = null;
 
 function openColorPicker(id, anchor) {
@@ -288,7 +286,7 @@ function openColorPicker(id, anchor) {
   // Position fixed, near the anchor dot
   const rect = anchor.getBoundingClientRect();
   palette.style.display = "grid";
-  const paletteW = 4 * 28 + 3 * 6 + 16; // 4 cols × 28px + gaps + padding
+  const paletteW = 4 * 28 + 3 * 6 + 16; // 4 cols x 28px + gaps + padding
   let left = rect.left + rect.width / 2 - paletteW / 2;
   let top = rect.bottom + 8;
   // clamp to viewport
@@ -313,7 +311,7 @@ function closePalette() {
   document.removeEventListener("click", _closePaletteOutside);
 }
 
-// ── export helpers ────────────────────────────────────────────────────────────
+// export helpers
 function download(filename, content, mime) {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
@@ -349,13 +347,13 @@ function escXml(s) {
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// ── export: JSON (native round-trip) ─────────────────────────────────────────
+// export: JSON (native round-trip)
 function exportJson() {
   const data = { version: 2, model: serialize(model), view };
   download("mindmap.qm.json", JSON.stringify(data, null, 2), "application/json");
 }
 
-// ── export: Markdown outline ──────────────────────────────────────────────────
+// export: Markdown outline
 function exportMd() {
   const lines = [];
   function walk(id, depth) {
@@ -368,7 +366,7 @@ function exportMd() {
   download("mindmap.md", lines.join("\n"), "text/markdown");
 }
 
-// ── export: FreeMind XML (.mm) ────────────────────────────────────────────────
+// export: FreeMind XML (.mm)
 function exportMM() {
   const lines = ['<map version="1.0.1">'];
   function walk(id, indent) {
@@ -389,7 +387,7 @@ function exportMM() {
   download("mindmap.mm", lines.join("\n"), "application/xml");
 }
 
-// ── export: SVG (programmatic, not a DOM dump) ────────────────────────────────
+// export: SVG (programmatic, not a DOM dump)
 const _CURVE_K = 0.3;
 
 function _svgEdgePath(p, c, horizontal, ox, oy) {
@@ -431,7 +429,7 @@ function _svgWrapText(text, maxW) {
 
 // Build the full SVG document string + its pixel size. Shared by the SVG
 // download and the PNG export (rasterizing our own SVG keeps connector lines
-// intact — html2canvas couldn't capture the overflow:visible link layer).
+// intact - html2canvas couldn't capture the overflow:visible link layer).
 function buildSvg() {
   const isDark = document.documentElement.dataset.theme === "dark";
   const bg = isDark ? "#0f1117" : "#F4F5F7";
@@ -495,7 +493,7 @@ function exportSvg() {
   download("mindmap.svg", buildSvg().svgStr, "image/svg+xml");
 }
 
-// ── export: PNG (rasterized from the SVG at 2×) ──────────────────────────────
+// export: PNG (rasterized from the SVG at 2x)
 function exportPng() {
   const { svgStr, w, h } = buildSvg();
   const url = URL.createObjectURL(new Blob([svgStr], { type: "image/svg+xml" }));
@@ -518,7 +516,7 @@ function exportPng() {
   img.src = url;
 }
 
-// ── save menu ─────────────────────────────────────────────────────────────────
+// save menu
 function handleExport(fmt) {
   closeSaveMenu();
   switch (fmt) {
@@ -551,7 +549,7 @@ function closeSaveMenu() {
   document.removeEventListener("click", _closeSaveMenuOutside);
 }
 
-// ── import ────────────────────────────────────────────────────────────────────
+// import
 function importFile() {
   const input = document.createElement("input");
   input.type = "file";
@@ -578,7 +576,7 @@ function importFile() {
   input.click();
 }
 
-// ── pointer: pan + zoom ───────────────────────────────────────────────────────
+// pointer: pan + zoom
 let panning = null;
 function onCanvasMouseDown(e) {
   if (e.target.closest(".node")) return;
@@ -617,7 +615,7 @@ function zoomBy(factor) {
   applyView();
 }
 
-// ── keyboard ──────────────────────────────────────────────────────────────────
+// keyboard
 function onKeyDown(e) {
   const active = document.activeElement;
   if (active && active.classList.contains("content") &&
@@ -654,7 +652,7 @@ function onKeyDown(e) {
   }
 }
 
-// ── delegated node interactions ────────────────────────────────────────────────
+// delegated node interactions
 function onNodesClick(e) {
   const el = e.target.closest(".node");
   if (!el) return;
@@ -672,7 +670,7 @@ function onNodesDblClick(e) {
   if (el && !e.target.closest("button")) startEdit(el.dataset.id);
 }
 
-// ── boot ──────────────────────────────────────────────────────────────────────
+// boot
 function boot() {
   canvas = $("#canvas");
   world = $("#world");

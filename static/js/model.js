@@ -1,12 +1,10 @@
-// ─────────────────────────────────────────────────────────────────────────
-// model.js — the single source of truth.
+// model.js - the single source of truth.
 //
 // The map is pure data: a tree of nodes held in a Map. Positions (x,y) and
 // measured sizes (w,h) live ON the nodes but are written by other layers
 // (engine writes x,y; render writes w,h). Nothing here ever touches the DOM.
 //
-// Pipeline:  mutate model  →  measure  →  engine.layout  →  render  →  connectors
-// ─────────────────────────────────────────────────────────────────────────
+// Pipeline:  mutate model  ->  measure  ->  engine.layout  ->  render  ->  connectors
 
 export const LAYOUT = {
   RIGHT: "right",     // all children grow to the right (org-chart-ish, horizontal)
@@ -47,7 +45,7 @@ export function createModel(rootText = "Central Idea") {
   };
 }
 
-// ── tree accessors ──────────────────────────────────────────────────────
+// tree accessors
 export const getNode = (model, id) => model.nodes.get(id);
 export const getRoot = (model) => model.nodes.get(model.rootId);
 export const isRoot = (model, id) => id === model.rootId;
@@ -57,12 +55,12 @@ export function childNodes(model, node) {
   return node.children.map((id) => model.nodes.get(id)).filter(Boolean);
 }
 
-// Visible children — respects collapse.
+// Visible children - respects collapse.
 export function visibleChildren(model, node) {
   return node.collapsed ? [] : childNodes(model, node);
 }
 
-// ── mutations ───────────────────────────────────────────────────────────
+// mutations
 // Each returns the affected node so callers can select / edit it.
 
 export function addChild(model, parentId, text = "") {
@@ -114,7 +112,7 @@ export function toggleCollapse(model, id) {
   if (n && n.children.length) n.collapsed = !n.collapsed;
 }
 
-// ── serialization (for save / undo / autosave) ──────────────────────────
+// serialization (for save / undo / autosave)
 export function serialize(model) {
   return JSON.stringify({
     rootId: model.rootId,

@@ -1,32 +1,30 @@
-// ─────────────────────────────────────────────────────────────────────────
-// engine.js — the tidy-tree layout engine.
+// engine.js - the tidy-tree layout engine.
 //
 // Pure function: layout(model) reads each node's measured size (w,h) and the
 // tree shape, then writes world-space (x,y) = top-left of every node. It never
 // touches the DOM.
 //
-// Algorithm: variable-size "tidy tree" via subtree-block packing —
+// Algorithm: variable-size "tidy tree" via subtree-block packing -
 //   1. post-order: each subtree's BREADTH extent = max(own breadth size,
-//      sum of children extents + gaps). Disjoint bands ⇒ subtrees never
+//      sum of children extents + gaps). Disjoint bands => subtrees never
 //      overlap, so no contour threading is needed (the mind-map case).
 //   2. pre-order: stack children within the parent's band; center the parent
-//      between its first and last child (Reingold–Tilford's centering rule).
+//      between its first and last child (Reingold-Tilford's centering rule).
 //
 // All four layout modes reuse ONE canonical pass (depth grows +, breadth is
 // the cross axis); modes are just a projection of canonical (depth,breadth)
 // onto screen (x,y):
-//   RIGHT    → x=depth,  y=breadth          (horizontal)
-//   LEFT     → x=-depth, y=breadth          (horizontal, mirrored)
-//   DOWN     → x=breadth, y=depth           (vertical)
-//   BALANCED → split root's children L/R, run two horizontal passes, join.
-// ─────────────────────────────────────────────────────────────────────────
+//   RIGHT    -> x=depth,  y=breadth          (horizontal)
+//   LEFT     -> x=-depth, y=breadth          (horizontal, mirrored)
+//   DOWN     -> x=breadth, y=depth           (vertical)
+//   BALANCED -> split root's children L/R, run two horizontal passes, join.
 
 import { LAYOUT, getRoot, visibleChildren } from "/static/js/model.js";
 
 const GAPS = {
   DEPTH: 80,    // distance between consecutive levels
   BREADTH: 30,  // distance between sibling subtrees (vertical breathing room
-                // — the main lever that keeps connector lines from crowding)
+                // - the main lever that keeps connector lines from crowding)
 };
 
 // breadth/depth size of a node given orientation ("h" = horizontal tree).
@@ -73,7 +71,7 @@ function assign(model, node, o, ext, d, bandStart, pos) {
   return bCenter;
 }
 
-// Project canonical (d, bCenter) → world top-left (x,y) for one node.
+// Project canonical (d, bCenter) -> world top-left (x,y) for one node.
 function project(model, node, pos, o, dir) {
   const p = pos[node.id];
   if (!p) return;

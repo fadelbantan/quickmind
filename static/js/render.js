@@ -1,26 +1,24 @@
-// ─────────────────────────────────────────────────────────────────────────
-// render.js — reconcile the model into the DOM, then draw connectors.
+// render.js - reconcile the model into the DOM, then draw connectors.
 //
 // Responsibilities (in pipeline order):
-//   1. reconcile  — create/remove node elements to match the model
-//   2. measure    — read each element's real w/h back INTO the model
-//   3. layout     — call the engine (writes x,y)
-//   4. position   — transform each node to its (x,y)  [animates via CSS]
-//   5. connect    — draw one SVG path per parent→child edge
+//   1. reconcile  - create/remove node elements to match the model
+//   2. measure    - read each element's real w/h back INTO the model
+//   3. layout     - call the engine (writes x,y)
+//   4. position   - transform each node to its (x,y)  [animates via CSS]
+//   5. connect    - draw one SVG path per parent->child edge
 //
 // The DOM is a projection of the model; it is never read for layout decisions
 // except to measure intrinsic node sizes.
-// ─────────────────────────────────────────────────────────────────────────
 
 import { LAYOUT, childNodes, visibleChildren } from "/static/js/model.js";
 import { layout } from "/static/js/engine.js";
 
 // Choose dark or light text for a given background so it stays readable.
-// Uses perceived (sRGB-weighted) luminance: bright bg → dark text, and
-// dark bg → light text.
+// Uses perceived (sRGB-weighted) luminance: bright bg -> dark text, and
+// dark bg -> light text.
 function readableText(bg) {
   const hex = String(bg).trim().replace("#", "");
-  if (hex.length < 6) return ""; // unknown format → let CSS decide
+  if (hex.length < 6) return ""; // unknown format -> let CSS decide
   const r = parseInt(hex.slice(0, 2), 16);
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
@@ -30,7 +28,7 @@ function readableText(bg) {
 
 let nodesLayer = null;  // div holding .node elements
 let linksLayer = null;  // <svg> holding connector paths
-const els = new Map();  // id → element
+const els = new Map();  // id -> element
 
 export function initRender({ nodes, links }) {
   nodesLayer = nodes;
@@ -133,8 +131,8 @@ function connect(model) {
 }
 
 // How early the curve breaks toward the child, as a fraction of the gap.
-// Small value ⇒ lines split right at the parent and fan out cleanly instead of
-// bundling into a "rope"; large value ⇒ lines stay parallel longer. 0.3 keeps
+// Small value => lines split right at the parent and fan out cleanly instead of
+// bundling into a "rope"; large value => lines stay parallel longer. 0.3 keeps
 // many-children fans readable.
 const CURVE_K = 0.3;
 
