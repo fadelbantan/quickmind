@@ -349,6 +349,30 @@ body {
     background: var(--hover-bg);
 }
 
+/* ─── Builder credit ───────────────────────────────────────────────────────*/
+#credit {
+    position: fixed;
+    bottom: 14px;
+    right: 16px;
+    z-index: 1000;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    padding: 5px 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--panel-shadow);
+    transition: color 0.2s ease, background 0.2s ease;
+    user-select: none;
+}
+
+#credit:hover {
+    color: var(--accent);
+    background: var(--hover-bg);
+}
+
 #theme-toggle svg {
     width: 20px;
     height: 20px;
